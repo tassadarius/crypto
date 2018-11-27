@@ -2,5 +2,5 @@
 <?NLS TYPE="org.eclipse.help.toc"?>
 
 <toc label="Sphincs-Verfahren" link_to="../org.jcryptool.core.help/$nl$/toc.xml#visualizationPlugins" topic="nl/de/help/content/Sphincs.html">
-    <topic href="nl/de/help/content/Sphincs.html" label="Sphincs-Signaturverfahren"/>
+    <topic href="nl/en/help/content/Sphincs.html" label="Sphincs signature"/>
 </toc>
