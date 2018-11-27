@@ -48,6 +48,7 @@ import org.eclipse.zest.core.widgets.GraphNode;
 import org.eclipse.zest.core.widgets.ZestStyles;
 import org.eclipse.zest.layouts.LayoutStyles;
 import org.eclipse.zest.layouts.algorithms.TreeLayoutAlgorithm;
+import org.jcryptool.core.util.fonts.FontService;
 import org.jcryptool.visual.sphincs.SphincsDescriptions;
 import org.jcryptool.visual.sphincs.algorithm.Node;
 import org.jcryptool.visual.sphincs.algorithm.Signature;
@@ -133,6 +134,7 @@ public class SphincsTreeView extends Composite {
         // Beschreibung der SPHINCS-Struktur
         descriptionExpander = new ExpandBar(this, SWT.NONE);
         descriptionExpander.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+        descriptionExpander.setFont(FontService.getLargeFont());
         ExpandItem collapsablePart = new ExpandItem(descriptionExpander, SWT.NONE, 0);
         
         // Ausgeklappter Teil, von  descriptionExpander

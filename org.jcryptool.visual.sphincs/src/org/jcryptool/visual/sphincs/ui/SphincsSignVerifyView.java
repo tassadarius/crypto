@@ -147,13 +147,13 @@ public class SphincsSignVerifyView extends Composite {
                                
                 if(signature.getHorstSignature().equals(sphincs.sign(txtMessage.getText()).getHorstSignature())) {
                    txtStatus.setBackground(ColorConstants.green);
-                   txtStatus.setText(SphincsDescriptions.SphincsVerify_Text_1);
+                   txtStatus.setText(SphincsDescriptions.SphincsVerify_Success);
                    verified = true;
                 }
                 else
                 {
                    txtStatus.setBackground(ColorConstants.red);
-                   txtStatus.setText(SphincsDescriptions.SphincsVerify_Text_2);
+                   txtStatus.setText(SphincsDescriptions.SphincsVerify_Fail);
                    verified = false;
                 }
                 
