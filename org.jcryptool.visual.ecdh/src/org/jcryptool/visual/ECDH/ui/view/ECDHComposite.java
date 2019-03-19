@@ -46,7 +46,6 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPage;
@@ -260,7 +259,7 @@ public class ECDHComposite extends Composite {
 			public void widgetSelected(SelectionEvent e) {
 				try {
 					if (showInformationDialogs) {
-						MessageBox messageBox = new MessageBox(new Shell(Display.getCurrent()),
+						MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
 								SWT.ICON_INFORMATION | SWT.OK);
 						messageBox.setText(Messages.getString("ECDHView.setPublicParameters")); //$NON-NLS-1$
 						messageBox.setMessage(Messages.getString("ECDHView.Step1")); //$NON-NLS-1$
@@ -268,7 +267,7 @@ public class ECDHComposite extends Composite {
 					}
 
 					PublicParametersWizard wiz = new PublicParametersWizard(curve, generator);
-					WizardDialog dialog = new WizardDialog(new Shell(Display.getCurrent()), wiz);
+					WizardDialog dialog = new WizardDialog(Display.getCurrent().getActiveShell(), wiz);
 					dialog.setHelpAvailable(false);
 					if (dialog.open() == Window.OK) {
 						reset(1);
@@ -310,7 +309,7 @@ public class ECDHComposite extends Composite {
 			public void widgetSelected(SelectionEvent e) {
 				try {
 					if (showInformationDialogs) {
-						MessageBox messageBox = new MessageBox(new Shell(Display.getCurrent()),
+						MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
 								SWT.ICON_INFORMATION | SWT.OK);
 						messageBox.setText(Messages.getString("ECDHView.chooseSecrets")); //$NON-NLS-1$
 						messageBox.setMessage(Messages.getString("ECDHView.Step2")); //$NON-NLS-1$
@@ -337,7 +336,7 @@ public class ECDHComposite extends Composite {
 			public void widgetSelected(SelectionEvent e) {
 				try {
 					if (showInformationDialogs) {
-						MessageBox messageBox = new MessageBox(new Shell(Display.getCurrent()),
+						MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
 								SWT.ICON_INFORMATION | SWT.OK);
 						messageBox.setText(Messages.getString("ECDHView.createSharedKeys")); //$NON-NLS-1$
 						messageBox.setMessage(Messages.getString("ECDHView.Step3")); //$NON-NLS-1$
@@ -364,7 +363,7 @@ public class ECDHComposite extends Composite {
 			public void widgetSelected(SelectionEvent e) {
 				try {
 					if (showInformationDialogs) {
-						MessageBox messageBox = new MessageBox(new Shell(Display.getCurrent()),
+						MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
 								SWT.ICON_INFORMATION | SWT.OK);
 						messageBox.setText(Messages.getString("ECDHView.exchangeSharedKeys")); //$NON-NLS-1$
 						messageBox.setMessage(Messages.getString("ECDHView.Step4")); //$NON-NLS-1$
@@ -391,7 +390,7 @@ public class ECDHComposite extends Composite {
 			public void widgetSelected(SelectionEvent e) {
 				try {
 					if (showInformationDialogs) {
-						MessageBox messageBox = new MessageBox(new Shell(Display.getCurrent()),
+						MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
 								SWT.ICON_INFORMATION | SWT.OK);
 						messageBox.setText(Messages.getString("ECDHView.generateCommonKey")); //$NON-NLS-1$
 						messageBox.setMessage(Messages.getString("ECDHView.Step5")); //$NON-NLS-1$
@@ -707,7 +706,7 @@ public class ECDHComposite extends Composite {
 					wiz = new SecretKeyWizard("Alice", secretLargeA, largeOrder); //$NON-NLS-1$
 				else
 					wiz = new SecretKeyWizard("Alice", secretA, valueN); //$NON-NLS-1$
-				WizardDialog dialog = new WizardDialog(new Shell(Display.getCurrent()), wiz);
+				WizardDialog dialog = new WizardDialog(Display.getCurrent().getActiveShell(), wiz);
 				dialog.setHelpAvailable(false);
 				dialog.setPageSize(600, 80);
 				if (dialog.open() == Window.OK) {
@@ -726,7 +725,7 @@ public class ECDHComposite extends Composite {
 					textSecretA.setText("xxxxxxxxxxxxxxxxxxxxxx"); //$NON-NLS-1$
 					btnSecretA.setBackground(cGreen);
 					if (showInformationDialogs) {
-						MessageBox messageBox = new MessageBox(new Shell(Display.getCurrent()),
+						MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
 								SWT.ICON_INFORMATION | SWT.OK);
 						messageBox.setText("Alice " + Messages.getString("ECDHView.messageSecretKeyTitle")); //$NON-NLS-1$ //$NON-NLS-2$
 						messageBox.setMessage("Alice " + Messages.getString("ECDHView.messageSecretKey") + " Alice" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -759,7 +758,7 @@ public class ECDHComposite extends Composite {
 				}
 				btnCalculateSharedA.setBackground(cGreen);
 				if (showInformationDialogs) {
-					MessageBox messageBox = new MessageBox(new Shell(Display.getCurrent()),
+					MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
 							SWT.ICON_INFORMATION | SWT.OK);
 					messageBox.setText(Messages.getString("ECDHView.messageSharedKeyTitle")); //$NON-NLS-1$
 					messageBox.setMessage("Alice " + Messages.getString("ECDHView.messageSharedKeyHer")); //$NON-NLS-1$ //$NON-NLS-2$
@@ -797,7 +796,7 @@ public class ECDHComposite extends Composite {
 				}
 				btnCalculateKeyA.setBackground(cGreen);
 				if (showInformationDialogs) {
-					MessageBox messageBox = new MessageBox(new Shell(Display.getCurrent()),
+					MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
 							SWT.ICON_INFORMATION | SWT.OK);
 					messageBox.setText(Messages.getString("ECDHView.messageCommonKeyTitle")); //$NON-NLS-1$
 					messageBox.setMessage("Alice " + Messages.getString("ECDHView.messageCommonKey")); //$NON-NLS-1$ //$NON-NLS-2$
@@ -820,7 +819,7 @@ public class ECDHComposite extends Composite {
 						b = keyA.equals(keyB);
 					if (b) {
 						if (showInformationDialogs) {
-							MessageBox messageBox = new MessageBox(new Shell(Display.getCurrent()),
+							MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
 									SWT.ICON_INFORMATION | SWT.OK);
 							messageBox.setText(Messages.getString("ECDHView.messageSuccesTitle")); //$NON-NLS-1$
 							messageBox.setMessage(Messages.getString("ECDHView.messageSucces")); //$NON-NLS-1$
@@ -828,7 +827,7 @@ public class ECDHComposite extends Composite {
 						}
 					} else {
 						if (showInformationDialogs) {
-							MessageBox messageBox = new MessageBox(new Shell(Display.getCurrent()),
+							MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
 									SWT.ICON_ERROR | SWT.OK);
 							messageBox.setText(Messages.getString("ECDHView.messageFailTitle")); //$NON-NLS-1$
 							messageBox.setMessage(Messages.getString("ECDHView.messageFail")); //$NON-NLS-1$
@@ -875,7 +874,7 @@ public class ECDHComposite extends Composite {
 				else
 					wiz = new SecretKeyWizard("Bob", secretB, valueN); //$NON-NLS-1$
 
-				WizardDialog dialog = new WizardDialog(new Shell(Display.getCurrent()), wiz);
+				WizardDialog dialog = new WizardDialog(Display.getCurrent().getActiveShell(), wiz);
 				dialog.setHelpAvailable(false);
 				dialog.setPageSize(600, 80);
 				if (dialog.open() == Window.OK) {
@@ -894,7 +893,7 @@ public class ECDHComposite extends Composite {
 					textSecretB.setText("xxxxxxxxxxxxxxxxxxxxxx"); //$NON-NLS-1$
 					btnSecretB.setBackground(cGreen);
 					if (showInformationDialogs) {
-						MessageBox messageBox = new MessageBox(new Shell(Display.getCurrent()),
+						MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
 								SWT.ICON_INFORMATION | SWT.OK);
 						messageBox.setText("Bob " + Messages.getString("ECDHView.messageSecretKeyTitle")); //$NON-NLS-1$ //$NON-NLS-2$
 						messageBox.setMessage("Bob " + Messages.getString("ECDHView.messageSecretKey") + " Bob" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -928,7 +927,7 @@ public class ECDHComposite extends Composite {
 				}
 				btnCalculateSharedB.setBackground(cGreen);
 				if (showInformationDialogs) {
-					MessageBox messageBox = new MessageBox(new Shell(Display.getCurrent()),
+					MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
 							SWT.ICON_INFORMATION | SWT.OK);
 					messageBox.setText(Messages.getString("ECDHView.messageSharedKeyTitle")); //$NON-NLS-1$
 					messageBox.setMessage("Bob " + Messages.getString("ECDHView.messageSharedKeyHis")); //$NON-NLS-1$ //$NON-NLS-2$
@@ -967,7 +966,7 @@ public class ECDHComposite extends Composite {
 				}
 				btnCalculateKeyB.setBackground(cGreen);
 				if (showInformationDialogs) {
-					MessageBox messageBox = new MessageBox(new Shell(Display.getCurrent()),
+					MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
 							SWT.ICON_INFORMATION | SWT.OK);
 					messageBox.setText(Messages.getString("ECDHView.messageCommonKeyTitle")); //$NON-NLS-1$
 					messageBox.setMessage("Bob " + Messages.getString("ECDHView.messageCommonKey")); //$NON-NLS-1$ //$NON-NLS-2$
@@ -990,7 +989,7 @@ public class ECDHComposite extends Composite {
 						b = keyA.equals(keyB);
 					if (b) {
 						if (showInformationDialogs) {
-							MessageBox messageBox = new MessageBox(new Shell(Display.getCurrent()),
+							MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
 									SWT.ICON_INFORMATION | SWT.OK);
 							messageBox.setText(Messages.getString("ECDHView.messageSuccesTitle")); //$NON-NLS-1$
 							messageBox.setMessage(Messages.getString("ECDHView.messageSucces")); //$NON-NLS-1$
@@ -998,7 +997,7 @@ public class ECDHComposite extends Composite {
 						}
 					} else {
 						if (showInformationDialogs) {
-							MessageBox messageBox = new MessageBox(new Shell(Display.getCurrent()),
+							MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
 									SWT.ICON_ERROR | SWT.OK);
 							messageBox.setText(Messages.getString("ECDHView.messageFailTitle")); //$NON-NLS-1$
 							messageBox.setMessage(Messages.getString("ECDHView.messageFail")); //$NON-NLS-1$
@@ -1114,7 +1113,7 @@ public class ECDHComposite extends Composite {
 					fw.close();
 				}
 			} catch (Exception e) {
-				MessageBox messageBox = new MessageBox(new Shell(Display.getCurrent()));
+				MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell());
 				messageBox.setText(Messages.getString("ECDHComposite.160")); //$NON-NLS-1$
 				messageBox.setMessage(Messages.getString("ECDHComposite.161") + e.getMessage()); //$NON-NLS-1$
 				messageBox.open();
