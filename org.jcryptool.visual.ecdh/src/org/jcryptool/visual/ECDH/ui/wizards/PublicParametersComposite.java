@@ -310,7 +310,7 @@ public class PublicParametersComposite extends Composite {
 
 		labelGLarge = new Label(contentGeneratorLarge, SWT.NONE);
 		labelGLarge.setText("G ="); //$NON-NLS-1$
-		txtGeneratorLarge = new Text(contentGeneratorLarge, SWT.BORDER | SWT.READ_ONLY);
+		txtGeneratorLarge = new Text(contentGeneratorLarge, SWT.BORDER | SWT.READ_ONLY | SWT.WRAP);
 		txtGeneratorLarge.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
 	}
 
@@ -405,7 +405,7 @@ public class PublicParametersComposite extends Composite {
 
 					groupGenerator.layout();
 					groupAttributes.layout();
-				}
+				} 
 
 			}
 		});
@@ -710,6 +710,7 @@ public class PublicParametersComposite extends Composite {
 
 			public void widgetSelected(SelectionEvent e) {
 				setCurve();
+				txtGeneratorLarge.requestLayout();
 			}
 		});
 
