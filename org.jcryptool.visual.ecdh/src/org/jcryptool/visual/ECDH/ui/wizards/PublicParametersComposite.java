@@ -716,6 +716,10 @@ public class PublicParametersComposite extends Composite {
 
 			public void widgetSelected(SelectionEvent e) {
 				updateLargeCurveElements();
+				txtGeneratorLarge.requestLayout();
+				txtALarge.requestLayout();
+				txtBLarge.requestLayout();
+				txtPLarge.requestLayout();
 			}
 		});
 
