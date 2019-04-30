@@ -378,7 +378,7 @@ public class PublicParametersComposite extends Composite {
 					// This is a fallback check for some weird state interactions where you would
 					// not have a valid generator point but you could press on finish
 					if (page.isPageComplete() && cGenerator.getItemCount() <= 0) {
-						page.setErrorMessage(Messages.getString("PublicParametersComposite.34"));
+						page.setErrorMessage(Messages.getString("ECDHWizPP.PublicParametersError")); //$NON-NLS-1$
 						page.setPageComplete(false);
 					}
 					groupGenerator.layout();
@@ -865,13 +865,13 @@ public class PublicParametersComposite extends Composite {
 	private void fillGeneratorPointsSmall() {
 
 		cGenerator.removeAll();
-		page.setErrorMessage(Messages.getString("PublicParametersComposite.34")); //$NON-NLS-1$
+		page.setErrorMessage(Messages.getString("ECDHWizPP.PublicParametersError")); //$NON-NLS-1$
 		page.setPageComplete(false);
 
 		// This should not happen in a normal control flow
 		if (curveSize != SMALLCURVE) {
 			LogUtil.logError(
-					"fillGeneratorPointsSmall() called with large curve. This should not happen in the program control flow");
+					"fillGeneratorPointsSmall() called with large curve. This should not happen in the program control flow"); //$NON-NLS-1$
 			return;
 		}
 
@@ -1079,7 +1079,7 @@ public class PublicParametersComposite extends Composite {
 			generatorX = pointG.getX().toString().trim().toUpperCase();
 			generatorY = pointG.getY().toString().trim().toUpperCase();
 		}
-		txtGeneratorLarge.setText(new String("(" + generatorX + ", " + generatorY + ")"));
+		txtGeneratorLarge.setText(new String("(" + generatorX + ", " + generatorY + ")")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	}
 
 	/**
@@ -1123,7 +1123,7 @@ public class PublicParametersComposite extends Composite {
 	 * @return the String with inserted spaces
 	 */
 	private String spaceString(String input) {
-		return input.replaceAll("(.{8})", "$1 ");
+		return input.replaceAll("(.{8})", "$1 "); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	/**
