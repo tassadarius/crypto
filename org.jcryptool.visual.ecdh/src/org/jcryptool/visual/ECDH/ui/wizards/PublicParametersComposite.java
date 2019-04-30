@@ -12,11 +12,13 @@ package org.jcryptool.visual.ECDH.ui.wizards;
 import java.util.ArrayList;
 import java.util.Random;
 
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -53,7 +55,7 @@ import de.flexiprovider.common.math.finitefields.GFPElement;
  * 
  * @author unknown
  * 
- * revised by
+ *         revised by
  * @author Michael Altenhuber <michael@altenhuber.net>
  *
  */
@@ -62,34 +64,36 @@ public class PublicParametersComposite extends Composite {
 	private static int SMALLCURVE = 1;
 	private static int LARGECURVE = 2;
 
-	private Group groupCurveType = null;
-	private Group groupCurve = null;
-	private Group groupGenerator = null;
-	private Button btnCreateGeneratorSmall = null;
-	private Button rbtnFP = null;
-	private Button rbtnFM = null;
-	private Group groupCurveSize = null;
-	private Button rbtnSmall = null;
-	private Button rbtnLarge = null;
-	private Group groupAttributes = null;
+	private Group groupCurveType;
+	private Group groupCurve;
+	private Group groupGenerator;
+	private Button btnCreateGeneratorSmall;
+	private Button rbtnFP;
+	private Button rbtnFM;
+	private Group groupCurveSize;
+	private Button rbtnSmall;
+	private Button rbtnLarge;
+	private Group groupAttributes;
 	private Composite contentFp;
 	private Composite contentFm;
 	private Composite contentLarge;
-	private Composite contentGeneratorSmall = null;
-	private Composite contentGeneratorLarge = null;
-	private Label label = null;
-	private Label label1 = null;
-	private Label label2 = null;
-	private Spinner spnrA = null;
-	private Spinner spnrB = null;
-	private Spinner spnrP = null;
-	private Button btnGenerateCurveFp = null;
-	private Button btnGenerateCurveFm = null;
-	private Button btnGenerateCurveLarge = null;
-	private StyledText stGeneratorSmall = null;
-	private StyledText stGeneratorLarge = null;
-	private Label labelGSmall = null;
-	private Label labelGLarge = null;
+	private Composite contentGeneratorSmall;
+	private Composite contentGeneratorLarge;
+	private Label labelA;
+	private Label labelB;
+	private Label labelP;
+	private Label labelALarge;
+	private Label labelBLarge;
+	private Label labelPLarge;
+	private Spinner spnrA;
+	private Spinner spnrB;
+	private Spinner spnrP;
+	private Button btnGenerateCurveFp;
+	private Button btnGenerateCurveFm;
+	private Button btnGenerateCurveLarge;
+	private StyledText stGeneratorSmall;
+	private Label labelGSmall;
+	private Label labelGLarge;
 	private int prime[] = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101,
 			103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223, 227,
 			229, 233, 239, 241, 251, 257, 263, 269, 271, 277, 281, 283, 293, 307, 311, 313, 317, 331, 337, 347, 349, 353, 359,
@@ -108,11 +112,10 @@ public class PublicParametersComposite extends Composite {
 	private Combo cCurve;
 	private Combo cStandard;
 	private Point pointG; // @jve:decl-index=0:
-	private Text txtA;
-	private Text txtB;
-	private Text txtP;
+	private Text txtALarge;
+	private Text txtBLarge;
+	private Text txtPLarge;
 	private Text txtGeneratorLarge;
-	private Label lblP;
 	private Spinner spnrM;
 	private Combo cGenerator = null;
 	private int[] elements;
@@ -122,16 +125,16 @@ public class PublicParametersComposite extends Composite {
 	private int curveSize = SMALLCURVE;
 	private StackLayout groupAttributesLayout; // @jve:decl-index=0:
 	private StackLayout groupGeneratorLayout;
-	PublicParametersComposite ppComposite;
-	Composite parent;
+	private PublicParametersComposite ppComposite;
+	private Font monoFont;
 
 	public PublicParametersComposite(Composite parent, int style, PublicParametersWizardPage p, EC c, ECPoint g) {
 		super(parent, style);
 		page = p;
-		page.getWizard().getContainer().getShell().setMinimumSize(600, 640);
+		page.getWizard().getContainer().getShell().setMinimumSize(600, 680);
 		curve = c;
 		ppComposite = this;
-		this.parent = parent;
+		monoFont = JFaceResources.getFont(JFaceResources.TEXT_FONT);
 		initialize();
 	}
 
@@ -144,8 +147,7 @@ public class PublicParametersComposite extends Composite {
 	}
 
 	/**
-	 * Initialize groupCurveType
-	 * (Radio Buttons where you can select Fp or F^m)
+	 * Initialize groupCurveType (Radio Buttons where you can select Fp or F^m)
 	 */
 	private void createGroupCurveType() {
 		groupCurveType = new Group(groupCurve, SWT.NONE);
@@ -179,7 +181,7 @@ public class PublicParametersComposite extends Composite {
 				}
 			}
 		});
-		
+
 		rbtnFM = new Button(groupCurveType, SWT.RADIO);
 		rbtnFM.setText("F(2^m)"); //$NON-NLS-1$
 		rbtnFM.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -187,7 +189,8 @@ public class PublicParametersComposite extends Composite {
 			public void widgetDefaultSelected(SelectionEvent e) {
 			}
 
-			 /* Part of the state machine which switches between the states of the curve.
+			/*
+			 * Part of the state machine which switches between the states of the curve.
 			 * Select F^m and update according UI elements and the curve. Slightly depending
 			 * on the size
 			 */
@@ -217,7 +220,8 @@ public class PublicParametersComposite extends Composite {
 	/**
 	 * Initialize diverse elements of groupCurve in default mode small
 	 * 
-	 * (Which contains the selection radio buttons (type and size) as well as the curve parameters)
+	 * (Which contains the selection radio buttons (type and size) as well as the
+	 * curve parameters)
 	 */
 	private void createGroupCurve() {
 		groupCurve = new Group(this, SWT.NONE);
@@ -230,12 +234,12 @@ public class PublicParametersComposite extends Composite {
 		createGroupAttributes();
 	}
 
-	
 	/**
-	 * Initialize groupGenerator at the bottom
-	 * (Which contains the combo box/label for the generator)
+	 * Initialize groupGenerator at the bottom (Which contains the combo box/label
+	 * for the generator)
 	 *
-	 * @param sizeType either SMALLCURVE or LARGECURVE depending on the current curve mode
+	 * @param sizeType either SMALLCURVE or LARGECURVE depending on the current
+	 *                 curve mode
 	 */
 	private void createGroupGenerator(int sizeType) {
 
@@ -258,8 +262,8 @@ public class PublicParametersComposite extends Composite {
 	}
 
 	/**
-	 * Initializes groupGeneratorSmall
-	 * (Which contains the generator combo box and the random generator button)
+	 * Initializes groupGeneratorSmall (Which contains the generator combo box and
+	 * the random generator button)
 	 */
 	private void createGroupGeneratorSmall() {
 		contentGeneratorSmall = new Composite(groupGenerator, SWT.NONE);
@@ -289,34 +293,31 @@ public class PublicParametersComposite extends Composite {
 		});
 		labelGSmall = new Label(contentGeneratorSmall, SWT.NONE);
 		labelGSmall.setText("G ="); //$NON-NLS-1$
+		labelGSmall.setFont(monoFont);
 		cGenerator = new Combo(contentGeneratorSmall, SWT.READ_ONLY);
+		cGenerator.setFont(monoFont);
 		cGenerator.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 3, 1));
 		fillGeneratorPointsSmall();
 	}
 
 	/**
-	 * Initializes groupGeneratorLarge
-	 * (Which contains the generator text field)
+	 * Initializes groupGeneratorLarge (Which contains the generator text field)
 	 */
 	private void createGroupGeneratorLarge() {
 		contentGeneratorLarge = new Composite(groupGenerator, SWT.NONE);
 		contentGeneratorLarge.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, true, 1, 1));
 		contentGeneratorLarge.setLayout(new GridLayout(4, false));
 
-		stGeneratorLarge = new StyledText(contentGeneratorLarge, SWT.READ_ONLY);
-		stGeneratorLarge.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
-		stGeneratorLarge.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false, 4, 1));
-		stGeneratorLarge.setText(Messages.getString("ECDHWizPP.textGenerator")); //$NON-NLS-1$
-
 		labelGLarge = new Label(contentGeneratorLarge, SWT.NONE);
 		labelGLarge.setText("G ="); //$NON-NLS-1$
+		labelGLarge.setFont(monoFont);
 		txtGeneratorLarge = new Text(contentGeneratorLarge, SWT.BORDER | SWT.READ_ONLY | SWT.WRAP);
 		txtGeneratorLarge.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
+		txtGeneratorLarge.setFont(monoFont);
 	}
 
 	/**
-	 * Initializes groupCurveSize
-	 * (Radio Buttons small/large)
+	 * Initializes groupCurveSize (Radio Buttons small/large)
 	 */
 	private void createGroupCurveSize() {
 		groupCurveSize = new Group(groupCurve, SWT.NONE);
@@ -332,15 +333,16 @@ public class PublicParametersComposite extends Composite {
 			public void widgetDefaultSelected(SelectionEvent e) {
 			}
 
-			/* Part of the state machine which switches between the states of the curve.
+			/*
+			 * Part of the state machine which switches between the states of the curve.
 			 * This one is the complicated. It handles various states when switching wildly
 			 */
 			public void widgetSelected(SelectionEvent e) {
 				if (rbtnSmall.getSelection()) {
-					
+
 					// Setting the small generator happens always
 					setTopGeneratorComposite(SMALLCURVE);
-					
+
 					// If the state is Fp just create a new curve if no Fp one exists and update
 					if (rbtnFP.getSelection()) {
 						groupAttributesLayout.topControl = contentFp;
@@ -351,10 +353,10 @@ public class PublicParametersComposite extends Composite {
 							((ECFp) curve).updateCurve(spnrA.getSelection(), spnrB.getSelection(), spnrP.getSelection());
 						}
 						fillGeneratorPointsSmall();
-						
-					// If the state is F^m 
+
+						// If the state is F^m
 					} else {
-						
+
 						// It may happen that contentFm has not yet been created yet
 						if (contentFm == null) {
 							CreateContentFmSmall();
@@ -362,8 +364,8 @@ public class PublicParametersComposite extends Composite {
 							groupAttributes.layout();
 						}
 						groupAttributesLayout.topControl = contentFm;
-						
-						// Create an F^m curve if we need it 
+
+						// Create an F^m curve if we need it
 						if (curve == null || curve.getType() != ECFm.ECFm) {
 							groupAttributesLayout.topControl = contentFm;
 							groupAttributes.layout();
@@ -385,7 +387,7 @@ public class PublicParametersComposite extends Composite {
 
 			}
 		});
-				
+
 		rbtnLarge = new Button(groupCurveSize, SWT.RADIO);
 		rbtnLarge.setText(Messages.getString("ECDHWizPP.large")); //$NON-NLS-1$
 		rbtnLarge.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -393,9 +395,9 @@ public class PublicParametersComposite extends Composite {
 			public void widgetDefaultSelected(SelectionEvent e) {
 			}
 
-			/* 
+			/*
 			 * Part of the state machine which switches between the states of the curve.
-			 * This one does less and most UI logic is put into the called functions. 
+			 * This one does less and most UI logic is put into the called functions.
 			 */
 			public void widgetSelected(SelectionEvent e) {
 				if (rbtnLarge.getSelection()) {
@@ -405,15 +407,15 @@ public class PublicParametersComposite extends Composite {
 
 					groupGenerator.layout();
 					groupAttributes.layout();
-				} 
+				}
 
 			}
 		});
 	}
 
 	/**
-	 * Initializes groupAttributes
-	 * (Elements for specific elliptic curve domain parameters, numbers and equations and stuff)
+	 * Initializes groupAttributes (Elements for specific elliptic curve domain
+	 * parameters, numbers and equations and stuff)
 	 * 
 	 * Note that this has a hidden part for the large curves
 	 */
@@ -432,7 +434,7 @@ public class PublicParametersComposite extends Composite {
 	}
 
 	/**
-	 * Initialize UI for elliptic curve domain parameters for small fp curves 
+	 * Initialize UI for elliptic curve domain parameters for small fp curves
 	 */
 	private void createContentFp() {
 		contentFp = new Composite(groupAttributes, SWT.NONE);
@@ -461,9 +463,11 @@ public class PublicParametersComposite extends Composite {
 			}
 		});
 
-		label = new Label(contentFp, SWT.NONE);
-		label.setText("a ="); //$NON-NLS-1$
+		labelA = new Label(contentFp, SWT.NONE);
+		labelA.setText("a ="); //$NON-NLS-1$
+		labelA.setFont(monoFont);
 		spnrA = new Spinner(contentFp, SWT.NONE);
+		spnrA.setFont(monoFont);
 		spnrA.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		spnrA.setMinimum(0);
 		spnrA.setSelection(1);
@@ -477,9 +481,11 @@ public class PublicParametersComposite extends Composite {
 				fillGeneratorPointsSmall();
 			}
 		});
-		label1 = new Label(contentFp, SWT.NONE);
-		label1.setText("b ="); //$NON-NLS-1$
+		labelB = new Label(contentFp, SWT.NONE);
+		labelB.setText("b ="); //$NON-NLS-1$
+		labelB.setFont(monoFont);
 		spnrB = new Spinner(contentFp, SWT.NONE);
+		spnrB.setFont(monoFont);
 		spnrB.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		spnrB.setMinimum(0);
 		spnrB.setSelection(1);
@@ -493,9 +499,11 @@ public class PublicParametersComposite extends Composite {
 				fillGeneratorPointsSmall();
 			}
 		});
-		label2 = new Label(contentFp, SWT.NONE);
-		label2.setText("p ="); //$NON-NLS-1$
+		labelP = new Label(contentFp, SWT.NONE);
+		labelP.setText("p ="); //$NON-NLS-1$
+		labelP.setFont(monoFont);
 		spnrP = new Spinner(contentFp, SWT.NONE);
+		spnrP.setFont(monoFont);
 		spnrP.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		spnrP.setMaximum(1000);
 		spnrP.setMinimum(3);
@@ -528,7 +536,7 @@ public class PublicParametersComposite extends Composite {
 	}
 
 	/**
-	 * Initialize UI for elliptic curve domain parameters for small F^m curves 
+	 * Initialize UI for elliptic curve domain parameters for small F^m curves
 	 */
 	private void CreateContentFmSmall() {
 		contentFm = new Composite(groupAttributes, SWT.NONE);
@@ -604,7 +612,9 @@ public class PublicParametersComposite extends Composite {
 
 		Label label = new Label(contentFm, SWT.NONE);
 		label.setText("m ="); //$NON-NLS-1$
+		label.setFont(monoFont);
 		spnrM = new Spinner(contentFm, SWT.NONE);
+		spnrM.setFont(monoFont);
 		spnrM.setMaximum(6);
 		spnrM.setSelection(3);
 		spnrM.setMinimum(3);
@@ -629,7 +639,9 @@ public class PublicParametersComposite extends Composite {
 		});
 		label = new Label(contentFm, SWT.NONE);
 		label.setText("f(x) ="); //$NON-NLS-1$
+		label.setFont(monoFont);
 		cG = new Combo(contentFm, SWT.READ_ONLY);
+		cG.setFont(monoFont);
 		cG.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
 		cG.addSelectionListener(new SelectionListener() {
 			public void widgetDefaultSelected(SelectionEvent e) {
@@ -644,7 +656,9 @@ public class PublicParametersComposite extends Composite {
 		});
 		label = new Label(contentFm, SWT.NONE);
 		label.setText("a ="); //$NON-NLS-1$
+		label.setFont(monoFont);
 		cA = new Combo(contentFm, SWT.READ_ONLY);
+		cA.setFont(monoFont);
 		cA.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
 		cA.addSelectionListener(new SelectionListener() {
 			public void widgetDefaultSelected(SelectionEvent e) {
@@ -658,7 +672,9 @@ public class PublicParametersComposite extends Composite {
 		});
 		label = new Label(contentFm, SWT.NONE);
 		label.setText("b ="); //$NON-NLS-1$
+		label.setFont(monoFont);
 		cB = new Combo(contentFm, SWT.READ_ONLY);
+		cB.setFont(monoFont);
 		cB.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
 		cB.addSelectionListener(new SelectionListener() {
 			public void widgetDefaultSelected(SelectionEvent e) {
@@ -672,8 +688,8 @@ public class PublicParametersComposite extends Composite {
 		});
 
 		/*
-		 * Initialize a working curve as predefined setting
-		// By setting cA to g4 (index 3), we have a working curve
+		 * Initialize a working curve as predefined setting // By setting cA to g4
+		 * (index 3), we have a working curve
 		 */
 		createFmCurve(spnrM.getSelection(), 3);
 
@@ -683,7 +699,8 @@ public class PublicParametersComposite extends Composite {
 	}
 
 	/**
-	 * Initialize the two combo boxes (standard and curve) only visible in large mode
+	 * Initialize the two combo boxes (standard and curve) only visible in large
+	 * mode
 	 */
 	private void createContentLarge() {
 		contentLarge = new Composite(groupAttributes, SWT.NONE);
@@ -711,6 +728,9 @@ public class PublicParametersComposite extends Composite {
 			public void widgetSelected(SelectionEvent e) {
 				setCurve();
 				txtGeneratorLarge.requestLayout();
+				txtALarge.requestLayout();
+				txtBLarge.requestLayout();
+				txtPLarge.requestLayout();
 			}
 		});
 
@@ -744,26 +764,33 @@ public class PublicParametersComposite extends Composite {
 		}
 
 		cCurve.select(0);
-		Label label = new Label(contentLarge, SWT.NONE);
-		label.setText("a ="); //$NON-NLS-1$
-		txtA = new Text(contentLarge, SWT.BORDER | SWT.READ_ONLY);
-		txtA.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1));
-		label = new Label(contentLarge, SWT.NONE);
-		label.setText("b ="); //$NON-NLS-1$
-		txtB = new Text(contentLarge, SWT.BORDER | SWT.READ_ONLY);
-		txtB.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1));
-		lblP = new Label(contentLarge, SWT.NONE);
-		lblP.setText("p ="); //$NON-NLS-1$
-		txtP = new Text(contentLarge, SWT.BORDER | SWT.READ_ONLY);
-		txtP.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1));
+		labelALarge = new Label(contentLarge, SWT.NONE);
+		labelALarge.setText("a ="); //$NON-NLS-1$
+		labelALarge.setFont(monoFont);
+		txtALarge = new Text(contentLarge, SWT.BORDER | SWT.READ_ONLY | SWT.WRAP);
+		txtALarge.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1));
+		txtALarge.setFont(monoFont);
+		labelBLarge = new Label(contentLarge, SWT.NONE);
+		labelBLarge.setText("b ="); //$NON-NLS-1$
+		labelBLarge.setFont(monoFont);
+		txtBLarge = new Text(contentLarge, SWT.BORDER | SWT.READ_ONLY | SWT.WRAP);
+		txtBLarge.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1));
+		txtBLarge.setFont(monoFont);
+		labelPLarge = new Label(contentLarge, SWT.NONE);
+		labelPLarge.setText("p ="); //$NON-NLS-1$
+		labelPLarge.setFont(monoFont);
+		txtPLarge = new Text(contentLarge, SWT.BORDER | SWT.READ_ONLY | SWT.WRAP);
+		txtPLarge.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1));
+		txtPLarge.setFont(monoFont);
 	}
 
 	/**
 	 * Set values for a and b in Fp small curves.
 	 * 
-	 * @param a the curve parameter 
-	 * @param b the curve parameter
-	 * @param deferGeneratorUpdate if true does not automatically update the generator points. Needed for init purposes
+	 * @param a                    the curve parameter
+	 * @param b                    the curve parameter
+	 * @param deferGeneratorUpdate if true does not automatically update the
+	 *                             generator points. Needed for init purposes
 	 */
 	private void setComboAB(int a, int b, boolean deferGeneratorUpdate) {
 		cA.removeAll();
@@ -867,8 +894,7 @@ public class PublicParametersComposite extends Composite {
 			else {
 				s[i] = "(" //$NON-NLS-1$
 						+ intToBitString(points[i].x == elements.length ? 0 : elements[points[i].x], spnrM.getSelection()) + "," //$NON-NLS-1$
-						+ intToBitString(points[i].y == elements.length ? 0 : elements[points[i].y], spnrM.getSelection())
-						+ ")"; //$NON-NLS-1$
+						+ intToBitString(points[i].y == elements.length ? 0 : elements[points[i].y], spnrM.getSelection()) + ")"; //$NON-NLS-1$
 				s[i] += " = ("; //$NON-NLS-1$
 				if (points[i].x == 0)
 					s[i] += "1, "; //$NON-NLS-1$
@@ -994,9 +1020,9 @@ public class PublicParametersComposite extends Composite {
 		setCurve();
 	}
 
-
 	/**
-	 * Fills the combo boxes standard and curve selection with respective values (e. g. ANSI X9.62, prime192v1) 
+	 * Fills the combo boxes standard and curve selection with respective values (e.
+	 * g. ANSI X9.62, prime192v1)
 	 */
 	private void fillLargeSelections() {
 		String[] s;
@@ -1018,44 +1044,51 @@ public class PublicParametersComposite extends Composite {
 	}
 
 	/**
-	 * Retrieves curve and updates all parameters for large curves.
-	 * This includes the order, generator, equation parameters
+	 * Retrieves curve and updates all parameters for large curves. This includes
+	 * the order, generator, equation parameters
 	 * 
-	 *  This function is way simpler than those for the small ones, because you cannot select
-	 *  any arguments. The curves are predefined and static.
+	 * This function is way simpler than those for the small ones, because you
+	 * cannot select any arguments. The curves are predefined and static.
 	 */
 	private void setCurve() {
+		String generatorX, generatorY;
+
 		if (rbtnFP.getSelection()) {
 			FlexiBigInt[] fbi = LargeCurves.getCurveFp(cStandard.getSelectionIndex(), cCurve.getSelectionIndex());
 			largeCurve = new EllipticCurveGFP(new GFPElement(fbi[0], fbi[2]), new GFPElement(fbi[1], fbi[2]), fbi[2]);
-			txtA.setText(fbi[0].toString(16));
-			txtB.setText(fbi[1].toString(16));
-			txtP.setText(fbi[2].toString(16));
-			lblP.setText("p ="); //$NON-NLS-1$
+			txtALarge.setText(spaceString(fbi[0].toString(16).toUpperCase()));
+			txtBLarge.setText(spaceString(fbi[1].toString(16).toUpperCase()));
+			txtPLarge.setText(spaceString(fbi[2].toString(16).toUpperCase()));
+			labelPLarge.setText("p ="); //$NON-NLS-1$
 			fbiOrderG = fbi[4];
 			pointG = new PointGFP(fbi[3].toByteArray(), (EllipticCurveGFP) largeCurve);
+			generatorX = spaceString(pointG.getX().toString().trim().toUpperCase());
+			generatorY = spaceString(pointG.getY().toString().trim().toUpperCase());
+
 		} else {
 			FlexiBigInt[] fbi = LargeCurves.getCurveFm(cStandard.getSelectionIndex(), cCurve.getSelectionIndex());
 			GF2nPolynomialField field = new GF2nPolynomialField(fbi[2].intValue());
 			largeCurve = new EllipticCurveGF2n(new GF2nPolynomialElement(field, fbi[0].toByteArray()),
 					new GF2nPolynomialElement(field, fbi[1].toByteArray()), fbi[2].intValue());
-			txtA.setText(fbi[0].toString(16));
-			txtB.setText(fbi[1].toString(16));
-			txtP.setText(fbi[2].toString(16));
-			lblP.setText("m ="); //$NON-NLS-1$
+			txtALarge.setText(spaceString(fbi[0].toString(16).toUpperCase()));
+			txtBLarge.setText(spaceString(fbi[1].toString(16).toUpperCase()));
+			txtPLarge.setText(spaceString(fbi[2].toString(16).toUpperCase()));
+			labelPLarge.setText("m ="); //$NON-NLS-1$
 			fbiOrderG = fbi[4];
 			pointG = new PointGF2n(fbi[3].toByteArray(), (EllipticCurveGF2n) largeCurve);
+			generatorX = pointG.getX().toString().trim().toUpperCase();
+			generatorY = pointG.getY().toString().trim().toUpperCase();
 		}
-		txtGeneratorLarge.setText(new String("(" + pointG.getX() + ", " + pointG.getY() + ")")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		txtGeneratorLarge.setText(new String("(" + generatorX + ", " + generatorY + ")"));
 	}
-	
+
 	/**
 	 * Create an F^m curve and set its according UI elements
 	 * 
 	 * @param m size of the parameter m
 	 */
-	private void createFmCurve(int m, int preselectedA) { 
-		
+	private void createFmCurve(int m, int preselectedA) {
+
 		curve = new ECFm();
 		((ECFm) curve).setM(m);
 		if (cG.getItemCount() == 0) {
@@ -1072,17 +1105,27 @@ public class PublicParametersComposite extends Composite {
 			elements = ((ECFm) curve).getElements();
 			setComboAB(curve.getA(), curve.getB(), false);
 		}
-		
+
 		if (preselectedA >= cA.getItemCount() - 1)
 			preselectedA = -1;
-		
+
 		if (preselectedA > 0)
 			cA.select(preselectedA);
-		
+
 		((ECFm) curve).setA(cA.getSelectionIndex(), true);
 		((ECFm) curve).setB(cB.getSelectionIndex(), true);
 	}
-	
+
+	/**
+	 * Insert a space at every 8th character in a given String
+	 * 
+	 * @param input a String to be spaced
+	 * @return the String with inserted spaces
+	 */
+	private String spaceString(String input) {
+		return input.replaceAll("(.{8})", "$1 ");
+	}
+
 	/**
 	 * Little helper to transform integers to bitstrings
 	 * 
@@ -1102,8 +1145,8 @@ public class PublicParametersComposite extends Composite {
 
 	/**
 	 * 
-	 * Convert int to bitstring and make the bitstring a certain length
-	 * Not quite sure why this is needed, I guess it makes leading 0
+	 * Convert int to bitstring and make the bitstring a certain length Not quite
+	 * sure why this is needed, I guess it makes leading 0
 	 * 
 	 * @param i
 	 * @param length
