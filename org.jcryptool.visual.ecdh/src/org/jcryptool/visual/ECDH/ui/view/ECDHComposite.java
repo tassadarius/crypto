@@ -89,8 +89,8 @@ public class ECDHComposite extends Composite {
 	private Canvas canvasBtn = null;
 	private Canvas canvasExchange = null;
 	private Canvas canvasKey = null;
-	private Color cRed = new Color(Display.getCurrent(), 247, 56, 51);
-	private Color cGreen = new Color(Display.getCurrent(), 0, 255, 64); 
+	private Color cRed = new Color(Display.getCurrent(), 214, 100, 100);
+	private Color cGreen = new Color(Display.getCurrent(), 140, 220, 132);
 	private Color grey = new Color(Display.getCurrent(), 140, 138, 140);
 	private Group groupAlice = null;
 	private Group groupBob = null;
@@ -277,7 +277,7 @@ public class ECDHComposite extends Composite {
 							pointG = wiz.getLargeGenerator();
 							largeOrder = wiz.getLargeOrder();
 							textCurve.setText(largeCurve.toString().replace("\n", " ").replace("<sup>", "^").replace("</sup>", "")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-							textGenerator.setText("" + pointG.getXAffin() + ", " + pointG.getYAffin() + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+							textGenerator.setText("(" + pointG.getXAffin() + ", " + pointG.getYAffin() + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 						} else {
 							curve = wiz.getCurve();
 							if (curve != null && curve.getType() == ECFm.ECFm)
@@ -673,12 +673,13 @@ public class ECDHComposite extends Composite {
 		groupParameters.setLayout(gridLayout);
 		Label label = new Label(groupParameters, SWT.NONE);
 		label.setText(Messages.getString("ECDHView.labelCurve")); //$NON-NLS-1$
-		textCurve = new Text(groupParameters, SWT.BORDER | SWT.READ_ONLY);
+		textCurve = new Text(groupParameters, SWT.BORDER | SWT.READ_ONLY | SWT.WRAP);
 		textCurve.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		label = new Label(groupParameters, SWT.NONE);
 		label.setText(Messages.getString("ECDHView.labelGenerator")); //$NON-NLS-1$
-		textGenerator = new Text(groupParameters, SWT.BORDER | SWT.READ_ONLY);
+		textGenerator = new Text(groupParameters, SWT.BORDER | SWT.READ_ONLY | SWT.WRAP);
 		textGenerator.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		
 	}
 
 	/**
