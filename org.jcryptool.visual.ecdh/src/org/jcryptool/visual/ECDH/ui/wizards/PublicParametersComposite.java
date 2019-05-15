@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.jcryptool.core.logging.utils.LogUtil;
+import org.jcryptool.core.util.fonts.FontService;
 import org.jcryptool.visual.ECDH.ECDHPlugin;
 import org.jcryptool.visual.ECDH.Messages;
 import org.jcryptool.visual.ECDH.algorithm.EC;
@@ -134,7 +135,7 @@ public class PublicParametersComposite extends Composite {
 		page.getWizard().getContainer().getShell().setMinimumSize(600, 680);
 		curve = c;
 		ppComposite = this;
-		monoFont = JFaceResources.getFont(JFaceResources.TEXT_FONT);
+		monoFont = FontService.getNormalMonospacedFont();
 		initialize();
 	}
 
