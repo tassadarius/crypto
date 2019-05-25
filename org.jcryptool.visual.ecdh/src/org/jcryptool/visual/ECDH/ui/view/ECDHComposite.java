@@ -145,7 +145,7 @@ public class ECDHComposite extends Composite {
 		setLayout(new GridLayout());
 		createCompositeIntro();
 		createGroupMain();
-		createInfoGroup();
+		//createInfoGroup();
 
 		serviceLocator = PlatformUI.getWorkbench();
 		IMenuManager dropDownMenu = view.getViewSite().getActionBars().getMenuManager();
@@ -204,7 +204,7 @@ public class ECDHComposite extends Composite {
 
 	private void createInfoGroup() {
 		settings = new Group(this, SWT.NONE);
-		settings.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		settings.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false)); //TODO settings
 		settings.setLayout(new GridLayout());
 		settings.setText(Messages.getString("ECDHComposite.settingsGroupTitle")); //$NON-NLS-1$
 		
@@ -278,6 +278,10 @@ public class ECDHComposite extends Composite {
 							largeOrder = wiz.getLargeOrder();
 							textCurve.setText(largeCurve.toString().replace("\n", " ").replace("<sup>", "^").replace("</sup>", "")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
 							textGenerator.setText("(" + pointG.getXAffin() + ", " + pointG.getYAffin() + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+							//textCurve.requestLayout();
+							//textGenerator.requestLayout();
+							//groupMain.layout();
+							groupMain.requestLayout();
 						} else {
 							curve = wiz.getCurve();
 							if (curve != null && curve.getType() == ECFm.ECFm)
@@ -287,7 +291,6 @@ public class ECDHComposite extends Composite {
 							valueN = wiz.getOrder();
 							textGenerator.setText(generator.toString());
 						}
-
 						btnChooseSecrets.setEnabled(true);
 						btnSetPublicParameters.setBackground(cGreen);
 					}
@@ -509,7 +512,7 @@ public class ECDHComposite extends Composite {
 
 		StyledText stDescription = new StyledText(compositeIntro, SWT.READ_ONLY | SWT.WRAP);
 		stDescription.setText(Messages.getString("ECDHView.description")); //$NON-NLS-1$
-		GridData gd_stDescription = new GridData(SWT.FILL, SWT.FILL, true, false);
+		GridData gd_stDescription = new GridData(SWT.FILL, SWT.FILL, false, false); // TODO Plugin Description
 		gd_stDescription.widthHint = label.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
 		stDescription.setLayoutData(gd_stDescription);
 	}
@@ -527,15 +530,16 @@ public class ECDHComposite extends Composite {
 	 *
 	 */
 	private void createGroupMain() {
-		groupMain = new Group(this, SWT.NONE);
-		groupMain.setLayout(new GridLayout(4, false));
-		groupMain.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
+		groupMain = new Group(this, SWT.NONE); // TODO groupMain
+		groupMain.setLayout(new GridLayout(5, false));
+		groupMain.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, true));
 
 		createCanvasBtn(groupMain);
 		createGroupParameters(groupMain);
 		createGroupAlice(groupMain);
 		createCanvasExchange(groupMain);
 		createGroupBob(groupMain);
+		createGroupInfo();
 		createCanvasKey(groupMain);
 
 		groupMain.setText(Messages.getString("ECDHView.groupMain")); //$NON-NLS-1$
@@ -545,7 +549,8 @@ public class ECDHComposite extends Composite {
 		canvasKey = new Canvas(parent, SWT.NO_REDRAW_RESIZE);
 		GridData gd_canvasKey = new GridData(SWT.FILL, SWT.FILL, false, true, 3, 1);
 		gd_canvasKey.verticalIndent = 10;
-		gd_canvasKey.widthHint = 750;
+		gd_canvasKey.widthHint = 750; //TODO
+		//gd_canvasKey.widthHint = 900;
 		gd_canvasKey.heightHint = 69;
 		canvasKey.setLayoutData(gd_canvasKey);
 		
@@ -666,20 +671,19 @@ public class ECDHComposite extends Composite {
 	 *
 	 */
 	private void createGroupParameters(Group parent) {
-		groupParameters = new Group(parent, SWT.NONE);
-		groupParameters.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1));
+		groupParameters = new Group(parent, SWT.NONE); // TODO groupParameters
+		groupParameters.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 4, 1));
 		groupParameters.setText(Messages.getString("ECDHView.groupParameters")); //$NON-NLS-1$
 		GridLayout gridLayout = new GridLayout(2, false);
 		groupParameters.setLayout(gridLayout);
 		Label label = new Label(groupParameters, SWT.NONE);
 		label.setText(Messages.getString("ECDHView.labelCurve")); //$NON-NLS-1$
-		textCurve = new Text(groupParameters, SWT.BORDER | SWT.READ_ONLY | SWT.WRAP);
-		textCurve.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		textCurve = new Text(groupParameters, SWT.BORDER | SWT.READ_ONLY | SWT.WRAP); // TODO textCurve
+		textCurve.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
 		label = new Label(groupParameters, SWT.NONE);
 		label.setText(Messages.getString("ECDHView.labelGenerator")); //$NON-NLS-1$
-		textGenerator = new Text(groupParameters, SWT.BORDER | SWT.READ_ONLY | SWT.WRAP);
-		textGenerator.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		
+		textGenerator = new Text(groupParameters, SWT.BORDER | SWT.READ_ONLY | SWT.WRAP); // TODO textGenerator
+		textGenerator.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));		
 	}
 
 	/**
@@ -688,7 +692,7 @@ public class ECDHComposite extends Composite {
 	 */
 	private void createGroupAlice(Group parent) {
 		groupAlice = new Group(parent, SWT.NONE);
-		GridData gd_groupAlice = new GridData(SWT.DEFAULT, SWT.FILL, false, true);
+		GridData gd_groupAlice = new GridData(SWT.DEFAULT, SWT.FILL, false, false);
 		gd_groupAlice.widthHint = 300;
 		gd_groupAlice.heightHint = 400;
 		groupAlice.setLayoutData(gd_groupAlice);
@@ -855,7 +859,7 @@ public class ECDHComposite extends Composite {
 	 */
 	private void createGroupBob(Group parent) {
 		groupBob = new Group(parent, SWT.NONE);
-		GridData gd_groupBob = new GridData(SWT.DEFAULT, SWT.FILL, false, true);
+		GridData gd_groupBob = new GridData(SWT.DEFAULT, SWT.FILL, false, false);
 		gd_groupBob.widthHint = 300;
 		gd_groupBob.heightHint = 400;
 		groupBob.setLayoutData(gd_groupBob);
@@ -1015,6 +1019,20 @@ public class ECDHComposite extends Composite {
 
 		textCommonKeyB = new Text(groupBob, SWT.BORDER | SWT.READ_ONLY);
 		textCommonKeyB.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, false));
+	}
+	
+	private void createGroupInfo() {
+		Group groupInfo = new Group(groupMain, SWT.NONE);
+		groupInfo.setLayout(new GridLayout());
+		groupInfo.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, true, 1, 2));
+		groupInfo.setText("Aktueller Schritt");
+		
+		Text infoText = new Text(groupInfo, SWT.READ_ONLY | SWT.WRAP | SWT.MULTI);
+		infoText.setText("In Schritt 1 einigen sich die beiden Partner öffentlich auf ein Verfahren. Das bedeutet, dass "
+				+ "sie sich eine Kurve und dazugehörige Parameter aussuchen");
+		GridData infoTextLayout = new GridData(SWT.TOP, SWT.FILL, false, false, 1, 1);
+		infoTextLayout.widthHint = 300;
+		infoText.setLayoutData(infoTextLayout);
 	}
 
 	private String intToBitString(int i, int length) {
