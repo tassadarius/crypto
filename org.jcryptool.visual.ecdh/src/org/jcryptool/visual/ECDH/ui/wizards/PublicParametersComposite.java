@@ -12,7 +12,6 @@ package org.jcryptool.visual.ECDH.ui.wizards;
 import java.util.ArrayList;
 import java.util.Random;
 
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.custom.StyledText;

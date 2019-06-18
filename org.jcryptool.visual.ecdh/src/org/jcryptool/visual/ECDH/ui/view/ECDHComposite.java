@@ -66,6 +66,7 @@ import org.jcryptool.visual.ECDH.algorithm.EC;
 import org.jcryptool.visual.ECDH.algorithm.ECFm;
 import org.jcryptool.visual.ECDH.algorithm.ECPoint;
 import org.jcryptool.visual.ECDH.ui.wizards.PublicParametersWizard;
+import org.jcryptool.visual.ECDH.ui.wizards.SecretKeyComposite;
 import org.jcryptool.visual.ECDH.ui.wizards.SecretKeyWizard;
 import de.flexiprovider.common.math.FlexiBigInt;
 import de.flexiprovider.common.math.ellipticcurves.EllipticCurve;
@@ -139,13 +140,17 @@ public class ECDHComposite extends Composite {
 	private boolean keyBPressed = false;
 	private Image id;
 
+	private static final int RESET_ALL = 0;
+	private static final int RESET_PUBLIC_PARAMETERS = 1;
+	private static final int RESET_SECRET_PARAMETERS = 2;
+
 	public ECDHComposite(Composite parent, int style, ECDHView view) {
 		super(parent, style);
 		this.view = view;
 		setLayout(new GridLayout());
 		createCompositeIntro();
 		createGroupMain();
-		//createInfoGroup();
+		// createInfoGroup();
 
 		serviceLocator = PlatformUI.getWorkbench();
 		IMenuManager dropDownMenu = view.getViewSite().getActionBars().getMenuManager();
@@ -174,7 +179,8 @@ public class ECDHComposite extends Composite {
 				return null;
 			}
 		};
-		defineCommand(saveToEditorCommandId, Messages.getString("ECDHComposite.2"), null); // don't enable the command //$NON-NLS-1$
+		defineCommand(saveToEditorCommandId, Messages.getString("ECDHComposite.2"), null); // don't enable the //$NON-NLS-1$
+																							// command
 																							// until we have results to
 																							// save
 		addContributionItem(dropDownMenu, saveToEditorCommandId, null, null, SWT.PUSH);
@@ -193,7 +199,7 @@ public class ECDHComposite extends Composite {
 		final String resetCommandId = "org.jcryptool.visual.ecdh.commands.reset"; //$NON-NLS-1$
 		AbstractHandler resetHandler = new AbstractHandler() {
 			public Object execute(ExecutionEvent event) {
-				reset(0);
+				reset(RESET_ALL);
 				return null;
 			}
 		};
@@ -204,38 +210,38 @@ public class ECDHComposite extends Composite {
 
 	private void createInfoGroup() {
 		settings = new Group(this, SWT.NONE);
-		settings.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false)); //TODO settings
+		settings.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
 		settings.setLayout(new GridLayout());
 		settings.setText(Messages.getString("ECDHComposite.settingsGroupTitle")); //$NON-NLS-1$
-		
+
 		btn_showInfos = new Button(settings, SWT.CHECK);
 		btn_showInfos.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 		btn_showInfos.setSelection(showInformationDialogs);
-		btn_showInfos.setText(Messages.getString("ECDHComposite.5"));  //$NON-NLS-1$
+		btn_showInfos.setText(Messages.getString("ECDHComposite.5")); //$NON-NLS-1$
 		btn_showInfos.addSelectionListener(new SelectionListener() {
-			
+
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				showInformationDialogs = showInformationDialogs ? false : true;
 			}
-			
+
 			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {
 				widgetSelected(e);
 			}
 		});
-		
+
 		btn_showAnimation = new Button(settings, SWT.CHECK);
 		btn_showAnimation.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 		btn_showAnimation.setSelection(showAnimation);
 		btn_showAnimation.setText(Messages.getString("ECDHComposite.6")); //$NON-NLS-1$
 		btn_showAnimation.addSelectionListener(new SelectionListener() {
-			
+
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				showAnimation = showAnimation ? false : true;
 			}
-			
+
 			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {
 				widgetSelected(e);
@@ -270,18 +276,16 @@ public class ECDHComposite extends Composite {
 					WizardDialog dialog = new WizardDialog(Display.getCurrent().getActiveShell(), wiz);
 					dialog.setHelpAvailable(false);
 					if (dialog.open() == Window.OK) {
-						reset(1);
+						reset(RESET_PUBLIC_PARAMETERS);
+						groupMain.requestLayout();
 						large = wiz.isLarge();
 						if (large) {
 							largeCurve = wiz.getLargeCurve();
 							pointG = wiz.getLargeGenerator();
 							largeOrder = wiz.getLargeOrder();
-							textCurve.setText(largeCurve.toString().replace("\n", " ").replace("<sup>", "^").replace("</sup>", "")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
+							textCurve.setText(
+									largeCurve.toString().replace("\n", " ").replace("<sup>", "^").replace("</sup>", "")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
 							textGenerator.setText("(" + pointG.getXAffin() + ", " + pointG.getYAffin() + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-							//textCurve.requestLayout();
-							//textGenerator.requestLayout();
-							//groupMain.layout();
-							groupMain.requestLayout();
 						} else {
 							curve = wiz.getCurve();
 							if (curve != null && curve.getType() == ECFm.ECFm)
@@ -414,46 +418,47 @@ public class ECDHComposite extends Composite {
 			public void paintControl(PaintEvent e) {
 
 				// der Strich soll bei 1/3 links der Buttonbreite verlaufen
-				int x1 = btnSetPublicParameters.getBounds().x + (btnSetPublicParameters.getBounds().width/3) - 5;
+				int x1 = btnSetPublicParameters.getBounds().x + (btnSetPublicParameters.getBounds().width / 3) - 5;
 				int y1 = btnSetPublicParameters.getBounds().y;
 				int width = 10;
-				
+
 				Path connection = new Path(Display.getCurrent());
-				//waagerechte linie Oben 
+				// waagerechte linie Oben
 				connection.moveTo(x1, y1);
-				
+
 				int x2 = x1 + width;
 				connection.lineTo(x2, y1);
-				
-				// 60(ButtonhÃ¶he) + 40(Abstand der auch zeischen den anderen bUttons ist) - 5(damit ser Strich mittig ist)
+
+				// 60(ButtonhÃ¶he) + 40(Abstand der auch zeischen den anderen bUttons ist) -
+				// 5(damit ser Strich mittig ist)
 				int y3 = btnGenerateKey.getBounds().y + 120 - 5;
 				connection.lineTo(x2, y3);
-				
-				//40 Platz den die Pfeilspitze haben soll
+
+				// 40 Platz den die Pfeilspitze haben soll
 				int x4 = canvasBtn.getBounds().x + canvasBtn.getBounds().width - 40;
 				connection.lineTo(x4, y3);
-				
+
 				// Strich geht 10 nach oben
 				int y5 = y3 - 10;
 				connection.lineTo(x4, y5);
-				
-				//Pfeilspitze
+
+				// Pfeilspitze
 				int x6 = canvasBtn.getBounds().x + canvasBtn.getBounds().width - 10;
-				int y6 = y5+15;
+				int y6 = y5 + 15;
 				connection.lineTo(x6, y6);
-				
+
 				int y7 = y6 + 15;
 				connection.lineTo(x4, y7);
-				
-				int y8 = y7 -10;
+
+				int y8 = y7 - 10;
 				connection.lineTo(x4, y8);
-				
-				//weiter zur linken unteren Ecke 
+
+				// weiter zur linken unteren Ecke
 				connection.lineTo(x1, y8);
-				
+
 				// und wieder nach oben
 				connection.lineTo(x1, y1);
-				
+
 				e.gc.setBackground(grey);
 				e.gc.fillPath(connection);
 			}
@@ -465,7 +470,7 @@ public class ECDHComposite extends Composite {
 		gd_placeholder.heightHint = 10;
 		placeholder.setLayoutData(gd_placeholder);
 		placeholder.setVisible(false);
-		
+
 	}
 
 	private void defineCommand(final String commandId, final String name, AbstractHandler handler) {
@@ -477,8 +482,7 @@ public class ECDHComposite extends Composite {
 
 	private void addContributionItem(IContributionManager manager, final String commandId, final ImageDescriptor icon,
 			final String tooltip, int Style) {
-		CommandContributionItemParameter param = new CommandContributionItemParameter(serviceLocator, null, commandId,
-				Style);
+		CommandContributionItemParameter param = new CommandContributionItemParameter(serviceLocator, null, commandId, Style);
 		if (icon != null)
 			param.icon = icon;
 		if (tooltip != null && !tooltip.equals("")) //$NON-NLS-1$
@@ -549,17 +553,16 @@ public class ECDHComposite extends Composite {
 		canvasKey = new Canvas(parent, SWT.NO_REDRAW_RESIZE);
 		GridData gd_canvasKey = new GridData(SWT.FILL, SWT.FILL, false, true, 3, 1);
 		gd_canvasKey.verticalIndent = 10;
-		gd_canvasKey.widthHint = 750; //TODO
-		//gd_canvasKey.widthHint = 900;
+		gd_canvasKey.widthHint = 750;
 		gd_canvasKey.heightHint = 69;
 		canvasKey.setLayoutData(gd_canvasKey);
-		
+
 		canvasKey.addPaintListener(new PaintListener() {
-			
+
 			@Override
 			public void paintControl(PaintEvent e) {
 				id = ECDHPlugin.getImageDescriptor("icons/key.png").createImage(); //$NON-NLS-1$
-				if (keyAPressed && keyBPressed) {	
+				if (keyAPressed && keyBPressed) {
 					e.gc.drawImage(id, 305, 0);
 				}
 			}
@@ -573,14 +576,14 @@ public class ECDHComposite extends Composite {
 		gd_canvasExchange.heightHint = 400;
 		canvasExchange.setLayoutData(gd_canvasExchange);
 		canvasExchange.setLayout(new GridLayout());
-		
+
 		canvasExchange.addPaintListener(new PaintListener() {
-			
+
 			@Override
 			public void paintControl(PaintEvent e) {
 
 				int canvasWidth = canvasExchange.getBounds().width;
-				
+
 				GC gc = e.gc;
 				Path ab = new Path(Display.getCurrent());
 				// linker rand des canvas
@@ -614,7 +617,7 @@ public class ECDHComposite extends Composite {
 				int x10 = x4 - 4;
 				ab.lineTo(x10, y9);
 				int x11 = x2 - 10;
-				int y11 = y3+4;
+				int y11 = y3 + 4;
 				ab.lineTo(x11, y11);
 				int y12 = y1 + 10;
 				ab.lineTo(x11, y12);
@@ -623,14 +626,14 @@ public class ECDHComposite extends Composite {
 				ab.lineTo(x1, y1);
 				gc.setBackground(grey);
 				gc.fillPath(ab);
-				
+
 				Path ba = new Path(Display.getCurrent());
-				
+
 				int bax1 = canvasWidth;
 				int bay1 = textSharedB.getBounds().y + (textSharedB.getBounds().height / 2) - 5;
 				ba.moveTo(bax1, bay1);
-				int bax2 = (3*canvasWidth / 4) - 5;
-				ba.lineTo(bax2, bay1);			
+				int bax2 = (3 * canvasWidth / 4) - 5;
+				ba.lineTo(bax2, bay1);
 				int bay3 = textCommonKeyA.getBounds().y + (textCommonKeyA.getBounds().height / 2) - (canvasWidth * 2 / 4);
 				ba.lineTo(bax2, bay3);
 				// linker rand des canvas
@@ -653,7 +656,7 @@ public class ECDHComposite extends Composite {
 				int bax10 = bax4 + 4;
 				ba.lineTo(bax10, bay9);
 				int bax11 = bax2 + 10;
-				int bay11 = bay3+4;
+				int bay11 = bay3 + 4;
 				ba.lineTo(bax11, bay11);
 				int bay12 = bay1 + 10;
 				ba.lineTo(bax11, bay12);
@@ -671,19 +674,21 @@ public class ECDHComposite extends Composite {
 	 *
 	 */
 	private void createGroupParameters(Group parent) {
-		groupParameters = new Group(parent, SWT.NONE); // TODO groupParameters
+		groupParameters = new Group(parent, SWT.NONE);
 		groupParameters.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 4, 1));
 		groupParameters.setText(Messages.getString("ECDHView.groupParameters")); //$NON-NLS-1$
 		GridLayout gridLayout = new GridLayout(2, false);
 		groupParameters.setLayout(gridLayout);
 		Label label = new Label(groupParameters, SWT.NONE);
 		label.setText(Messages.getString("ECDHView.labelCurve")); //$NON-NLS-1$
-		textCurve = new Text(groupParameters, SWT.BORDER | SWT.READ_ONLY | SWT.WRAP); // TODO textCurve
+		textCurve = new Text(groupParameters, SWT.BORDER | SWT.READ_ONLY | SWT.WRAP);
 		textCurve.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
+		textCurve.setFont(FontService.getNormalMonospacedFont());
 		label = new Label(groupParameters, SWT.NONE);
 		label.setText(Messages.getString("ECDHView.labelGenerator")); //$NON-NLS-1$
-		textGenerator = new Text(groupParameters, SWT.BORDER | SWT.READ_ONLY | SWT.WRAP); // TODO textGenerator
-		textGenerator.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));		
+		textGenerator = new Text(groupParameters, SWT.BORDER | SWT.READ_ONLY | SWT.WRAP);
+		textGenerator.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
+		textGenerator.setFont(FontService.getNormalMonospacedFont());
 	}
 
 	/**
@@ -713,9 +718,9 @@ public class ECDHComposite extends Composite {
 					wiz = new SecretKeyWizard("Alice", secretA, valueN); //$NON-NLS-1$
 				WizardDialog dialog = new WizardDialog(Display.getCurrent().getActiveShell(), wiz);
 				dialog.setHelpAvailable(false);
-				dialog.setPageSize(600, 80);
+				dialog.setPageSize(SecretKeyComposite.minimumWidth, SecretKeyComposite.minimumHeight);
 				if (dialog.open() == Window.OK) {
-					reset(2);
+					reset(RESET_SECRET_PARAMETERS); // If the user goes back to this point reset from here
 					if (large) {
 						secretLargeA = wiz.getLargeSecret();
 						if (secretLargeA != null && secretLargeB != null) {
@@ -763,14 +768,12 @@ public class ECDHComposite extends Composite {
 				}
 				btnCalculateSharedA.setBackground(cGreen);
 				if (showInformationDialogs) {
-					MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
-							SWT.ICON_INFORMATION | SWT.OK);
+					MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(), SWT.ICON_INFORMATION | SWT.OK);
 					messageBox.setText(Messages.getString("ECDHView.messageSharedKeyTitle")); //$NON-NLS-1$
 					messageBox.setMessage("Alice " + Messages.getString("ECDHView.messageSharedKeyHer")); //$NON-NLS-1$ //$NON-NLS-2$
 					messageBox.open();
 				}
-				if ((large && shareLargeA != null && shareLargeB != null)
-						|| (!large && shareA != null && shareB != null)) {
+				if ((large && shareLargeA != null && shareLargeB != null) || (!large && shareA != null && shareB != null)) {
 					btnExchangeKeys.setEnabled(true);
 				}
 			}
@@ -801,8 +804,7 @@ public class ECDHComposite extends Composite {
 				}
 				btnCalculateKeyA.setBackground(cGreen);
 				if (showInformationDialogs) {
-					MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
-							SWT.ICON_INFORMATION | SWT.OK);
+					MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(), SWT.ICON_INFORMATION | SWT.OK);
 					messageBox.setText(Messages.getString("ECDHView.messageCommonKeyTitle")); //$NON-NLS-1$
 					messageBox.setMessage("Alice " + Messages.getString("ECDHView.messageCommonKey")); //$NON-NLS-1$ //$NON-NLS-2$
 					messageBox.open();
@@ -881,9 +883,9 @@ public class ECDHComposite extends Composite {
 
 				WizardDialog dialog = new WizardDialog(Display.getCurrent().getActiveShell(), wiz);
 				dialog.setHelpAvailable(false);
-				dialog.setPageSize(600, 80);
+				dialog.setPageSize(SecretKeyComposite.minimumWidth, SecretKeyComposite.minimumHeight);
 				if (dialog.open() == Window.OK) {
-					reset(2);
+					reset(RESET_SECRET_PARAMETERS); // If the user goes back to this point reset from here
 					if (large) {
 						secretLargeB = wiz.getLargeSecret();
 						if (secretLargeA != null && secretLargeB != null) {
@@ -932,14 +934,12 @@ public class ECDHComposite extends Composite {
 				}
 				btnCalculateSharedB.setBackground(cGreen);
 				if (showInformationDialogs) {
-					MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
-							SWT.ICON_INFORMATION | SWT.OK);
+					MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(), SWT.ICON_INFORMATION | SWT.OK);
 					messageBox.setText(Messages.getString("ECDHView.messageSharedKeyTitle")); //$NON-NLS-1$
 					messageBox.setMessage("Bob " + Messages.getString("ECDHView.messageSharedKeyHis")); //$NON-NLS-1$ //$NON-NLS-2$
 					messageBox.open();
 				}
-				if ((large && shareLargeA != null && shareLargeB != null)
-						|| (!large && shareA != null && shareB != null)) {
+				if ((large && shareLargeA != null && shareLargeB != null) || (!large && shareA != null && shareB != null)) {
 					btnExchangeKeys.setEnabled(true);
 				}
 			}
@@ -971,8 +971,7 @@ public class ECDHComposite extends Composite {
 				}
 				btnCalculateKeyB.setBackground(cGreen);
 				if (showInformationDialogs) {
-					MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
-							SWT.ICON_INFORMATION | SWT.OK);
+					MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(), SWT.ICON_INFORMATION | SWT.OK);
 					messageBox.setText(Messages.getString("ECDHView.messageCommonKeyTitle")); //$NON-NLS-1$
 					messageBox.setMessage("Bob " + Messages.getString("ECDHView.messageCommonKey")); //$NON-NLS-1$ //$NON-NLS-2$
 					messageBox.open();
@@ -1020,13 +1019,13 @@ public class ECDHComposite extends Composite {
 		textCommonKeyB = new Text(groupBob, SWT.BORDER | SWT.READ_ONLY);
 		textCommonKeyB.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, false));
 	}
-	
+
 	private void createGroupInfo() {
 		Group groupInfo = new Group(groupMain, SWT.NONE);
 		groupInfo.setLayout(new GridLayout());
 		groupInfo.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, true, 1, 2));
 		groupInfo.setText("Aktueller Schritt");
-		
+
 		Text infoText = new Text(groupInfo, SWT.READ_ONLY | SWT.WRAP | SWT.MULTI);
 		infoText.setText("In Schritt 1 einigen sich die beiden Partner öffentlich auf ein Verfahren. Das bedeutet, dass "
 				+ "sie sich eine Kurve und dazugehörige Parameter aussuchen");
@@ -1157,7 +1156,7 @@ public class ECDHComposite extends Composite {
 
 	private void reset(int i) {
 		switch (i) {
-		case 0: // complete reset
+		case RESET_ALL: // complete reset
 			curve = null;
 			valueN = 0;
 			generator = null;
@@ -1166,7 +1165,7 @@ public class ECDHComposite extends Composite {
 			textCurve.setText(""); //$NON-NLS-1$
 			textGenerator.setText(""); //$NON-NLS-1$
 			btnSetPublicParameters.setBackground(cRed);
-		case 1:// reset from Set public parameters button
+		case RESET_PUBLIC_PARAMETERS:// reset from Set public parameters button
 			secretA = -1;
 			secretB = -1;
 			secretLargeA = null;
@@ -1181,6 +1180,18 @@ public class ECDHComposite extends Composite {
 			btnSecretB.setBackground(cRed);
 			textSecretB.setText(""); //$NON-NLS-1$
 			btnCreateSharedKeys.setEnabled(false);
+
+			/*
+			 * This part of the switch (RESET_PUBLIC_PARAMETERS) is called when the public
+			 * parameters are changed. As we want a layout change (on textCurve and
+			 * textGenerator) when choosing large or small curves, we layout here. The text
+			 * fields are set empty beforehand to prevent layout to make them weird when
+			 * they are filled with a long string.
+			 */
+			textCurve.setText("");
+			textGenerator.setText("");
+			layout();
+		case RESET_SECRET_PARAMETERS: // this line is just for your information what will be reset
 		default:
 			shareA = null;
 			shareB = null;
@@ -1218,7 +1229,6 @@ public class ECDHComposite extends Composite {
 			command.setHandler(null);
 		}
 		groupMain.redraw();
-		layout();
 	}
 
 	private Point multiplyLargePoint(Point p, FlexiBigInt m) {
@@ -1236,17 +1246,18 @@ public class ECDHComposite extends Composite {
 		public void run() {
 			if (showAnimation) {
 				GC gc = new GC(canvasExchange);
-				Image original = new Image(canvasExchange.getDisplay(), canvasExchange.getBounds().width, canvasExchange.getBounds().height);
-				gc.copyArea(original, 0, canvasExchange.getBounds().height/2);
-				
+				Image original = new Image(canvasExchange.getDisplay(), canvasExchange.getBounds().width,
+						canvasExchange.getBounds().height);
+				gc.copyArea(original, 0, canvasExchange.getBounds().height / 2);
+
 				int canvasExchangeWidth = canvasExchange.getBounds().width;
 				int canvasExchangeHeight = canvasExchange.getBounds().height;
-				
+
 				// x und y bestimmen die startposition von den 1 und 0
 				int x = -70;
 				int y = 10;
 				String msg;
-				
+
 				if (large) {
 					msg = shareLargeA.getXAffin().toString(2).substring(0, 4) + " " //$NON-NLS-1$
 							+ shareLargeA.getYAffin().toString(2).substring(0, 4);
@@ -1257,19 +1268,19 @@ public class ECDHComposite extends Composite {
 					else
 						msg = intToBitString(shareA.x, 5) + " " + intToBitString(shareA.y, 5); //$NON-NLS-1$
 				}
-				
+
 				for (int i = 0; i < 136; i++) {
 					// Hier wird der Verlauf der 1 und 0 bestimmt
 					if (i < 12) {
-						x += canvasExchangeWidth/(4*12);
+						x += canvasExchangeWidth / (4 * 12);
 					} else if (i < 36) {
 						// Die -72 machen 18 Pixel aus, da 72/(4*12)=1,5*12=18
-						y += (canvasExchangeHeight)/(4*24);
+						y += (canvasExchangeHeight) / (4 * 24);
 					} else if (i < 60) {
-						x += canvasExchangeWidth/(2*24);
-						y += (canvasExchangeHeight-72)/(4*24);
+						x += canvasExchangeWidth / (2 * 24);
+						y += (canvasExchangeHeight - 72) / (4 * 24);
 					} else if (i < 68) {
-						x += canvasExchangeWidth/(4*8);
+						x += canvasExchangeWidth / (4 * 8);
 					} else if (i == 68) {
 						y = 10;
 						x = canvasExchangeWidth - 70;
@@ -1284,23 +1295,23 @@ public class ECDHComposite extends Composite {
 								msg = intToBitString(shareB.x, 5) + " " + intToBitString(shareB.y, 5); //$NON-NLS-1$
 						}
 					} else if (i < 80) {
-						x -= canvasExchangeWidth/(4*12);
+						x -= canvasExchangeWidth / (4 * 12);
 					} else if (i < 104) {
 						// Die -72 machen 18 Pixel aus, da 72/(4*12)=1,5*12=18
-						y += (canvasExchangeHeight)/(4*24);
+						y += (canvasExchangeHeight) / (4 * 24);
 					} else if (i < 128) {
-						x -= canvasExchangeWidth/(2*24);
-						y += (canvasExchangeHeight-72)/(4*24);
-					} else  if (i < 136) {
-						x -= canvasExchangeWidth/(4*8);
+						x -= canvasExchangeWidth / (2 * 24);
+						y += (canvasExchangeHeight - 72) / (4 * 24);
+					} else if (i < 136) {
+						x -= canvasExchangeWidth / (4 * 8);
 					}
-					
+
 					Image im = new Image(canvasExchange.getDisplay(), original, SWT.IMAGE_COPY);
 					GC gcI = new GC(im);
 					gcI.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_BLACK));
 					gcI.setFont(FontService.getHeaderFont());
 					gcI.drawText(msg, x, y, true);
-					gc.drawImage(im, 0, (canvasExchange.getBounds().height/2));
+					gc.drawImage(im, 0, (canvasExchange.getBounds().height / 2));
 
 					try {
 						sleep(50);
