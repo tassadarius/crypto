@@ -38,6 +38,7 @@ import org.jcryptool.visual.ECDH.algorithm.ECFp;
 import org.jcryptool.visual.ECDH.algorithm.ECPoint;
 import org.jcryptool.visual.ECDH.algorithm.LargeCurves;
 import org.jcryptool.visual.ECDH.data.Curves;
+import org.jcryptool.visual.ECDH.ECDHUtil;
 
 import de.flexiprovider.common.math.FlexiBigInt;
 import de.flexiprovider.common.math.ellipticcurves.EllipticCurve;
@@ -63,6 +64,9 @@ public class PublicParametersComposite extends Composite {
 
 	private static int SMALLCURVE = 1;
 	private static int LARGECURVE = 2;
+	
+	public static int TYPE_FP = 4;
+	public static int TYPE_FM = 8;
 
 	private Group groupCurveType;
 	private Group groupCurve;
@@ -563,7 +567,7 @@ public class PublicParametersComposite extends Composite {
 				int[] ip = ((ECFm) curve).getIrreduciblePolinomials();
 				String[] s = new String[ip.length];
 				for (int i = 0; i < s.length; i++)
-					s[i] = intToBitString(ip[i]);
+					s[i] = ECDHUtil.intToBitString(ip[i]);
 				cG.setItems(s);
 				if (ip.length == 1)
 					cG.select(0);
@@ -633,7 +637,7 @@ public class PublicParametersComposite extends Composite {
 				int[] ia = ((ECFm) curve).getIrreduciblePolinomials();
 				String[] s = new String[ia.length];
 				for (int i = 0; i < s.length; i++)
-					s[i] = intToBitString(ia[i]);
+					s[i] = ECDHUtil.intToBitString(ia[i]);
 				cG.setItems(s);
 			}
 		});
@@ -805,7 +809,7 @@ public class PublicParametersComposite extends Composite {
 		String[] sA = new String[elements.length + 1];
 		String[] sB = new String[elements.length];
 		for (int i = 0; i < elements.length; i++) {
-			sA[i] = intToBitString(elements[i], spnrM.getSelection());
+			sA[i] = ECDHUtil.intToBitString(elements[i], spnrM.getSelection());
 			if (i == 0)
 				sA[i] += " (1)"; //$NON-NLS-1$
 			else if (i == 1)
@@ -897,8 +901,8 @@ public class PublicParametersComposite extends Composite {
 				s[i] = "(" + points[i].x + "," + points[i].y + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			else {
 				s[i] = "(" //$NON-NLS-1$
-						+ intToBitString(points[i].x == elements.length ? 0 : elements[points[i].x], spnrM.getSelection()) + "," //$NON-NLS-1$
-						+ intToBitString(points[i].y == elements.length ? 0 : elements[points[i].y], spnrM.getSelection()) + ")"; //$NON-NLS-1$
+						+ ECDHUtil.intToBitString(points[i].x == elements.length ? 0 : elements[points[i].x], spnrM.getSelection()) + "," //$NON-NLS-1$
+						+ ECDHUtil.intToBitString(points[i].y == elements.length ? 0 : elements[points[i].y], spnrM.getSelection()) + ")"; //$NON-NLS-1$
 				s[i] += " = ("; //$NON-NLS-1$
 				if (points[i].x == 0)
 					s[i] += "1, "; //$NON-NLS-1$
@@ -1060,23 +1064,23 @@ public class PublicParametersComposite extends Composite {
 		if (rbtnFP.getSelection()) {
 			FlexiBigInt[] fbi = LargeCurves.getCurveFp(cStandard.getSelectionIndex(), cCurve.getSelectionIndex());
 			largeCurve = new EllipticCurveGFP(new GFPElement(fbi[0], fbi[2]), new GFPElement(fbi[1], fbi[2]), fbi[2]);
-			txtALarge.setText(spaceString(fbi[0].toString(16).toUpperCase()));
-			txtBLarge.setText(spaceString(fbi[1].toString(16).toUpperCase()));
-			txtPLarge.setText(spaceString(fbi[2].toString(16).toUpperCase()));
+			txtALarge.setText(ECDHUtil.spaceString(fbi[0].toString(16).toUpperCase()));
+			txtBLarge.setText(ECDHUtil.spaceString(fbi[1].toString(16).toUpperCase()));
+			txtPLarge.setText(ECDHUtil.spaceString(fbi[2].toString(16).toUpperCase()));
 			labelPLarge.setText("p ="); //$NON-NLS-1$
 			fbiOrderG = fbi[4];
 			pointG = new PointGFP(fbi[3].toByteArray(), (EllipticCurveGFP) largeCurve);
-			generatorX = spaceString(pointG.getX().toString().trim().toUpperCase());
-			generatorY = spaceString(pointG.getY().toString().trim().toUpperCase());
+			generatorX = ECDHUtil.spaceString(pointG.getX().toString().trim().toUpperCase());
+			generatorY = ECDHUtil.spaceString(pointG.getY().toString().trim().toUpperCase());
 
 		} else {
 			FlexiBigInt[] fbi = LargeCurves.getCurveFm(cStandard.getSelectionIndex(), cCurve.getSelectionIndex());
 			GF2nPolynomialField field = new GF2nPolynomialField(fbi[2].intValue());
 			largeCurve = new EllipticCurveGF2n(new GF2nPolynomialElement(field, fbi[0].toByteArray()),
 					new GF2nPolynomialElement(field, fbi[1].toByteArray()), fbi[2].intValue());
-			txtALarge.setText(spaceString(fbi[0].toString(16).toUpperCase()));
-			txtBLarge.setText(spaceString(fbi[1].toString(16).toUpperCase()));
-			txtPLarge.setText(spaceString(fbi[2].toString(16).toUpperCase()));
+			txtALarge.setText(ECDHUtil.spaceString(fbi[0].toString(16).toUpperCase()));
+			txtBLarge.setText(ECDHUtil.spaceString(fbi[1].toString(16).toUpperCase()));
+			txtPLarge.setText(ECDHUtil.spaceString(fbi[2].toString(16).toUpperCase()));
 			labelPLarge.setText("m ="); //$NON-NLS-1$
 			fbiOrderG = fbi[4];
 			pointG = new PointGF2n(fbi[3].toByteArray(), (EllipticCurveGF2n) largeCurve);
@@ -1099,7 +1103,7 @@ public class PublicParametersComposite extends Composite {
 			int[] ia = ((ECFm) curve).getIrreduciblePolinomials();
 			String[] s = new String[ia.length];
 			for (int i = 0; i < s.length; i++)
-				s[i] = intToBitString(ia[i]);
+				s[i] = ECDHUtil.intToBitString(ia[i]);
 			cG.setItems(s);
 		}
 		if (cG.getSelectionIndex() < 0)
@@ -1120,51 +1124,6 @@ public class PublicParametersComposite extends Composite {
 		((ECFm) curve).setB(cB.getSelectionIndex(), true);
 	}
 
-	/**
-	 * Insert a space at every 8th character in a given String
-	 * 
-	 * @param input a String to be spaced
-	 * @return the String with inserted spaces
-	 */
-	private String spaceString(String input) {
-		return input.replaceAll("(.{8})", "$1 "); //$NON-NLS-1$ //$NON-NLS-2$
-	}
-
-	/**
-	 * Little helper to transform integers to bitstrings
-	 * 
-	 * @param i a normal positive integer
-	 * @return input parameter i as bitstring
-	 */
-	private String intToBitString(int i) {
-		String s = ""; //$NON-NLS-1$
-		int j = i;
-		while (j > 1) {
-			s = (j % 2) + s;
-			j /= 2;
-		}
-		s = (j % 2) + s;
-		return s;
-	}
-
-	/**
-	 * 
-	 * Convert int to bitstring and make the bitstring a certain length Not quite
-	 * sure why this is needed, I guess it makes leading 0
-	 * 
-	 * @param i
-	 * @param length
-	 * @return
-	 */
-	private String intToBitString(int i, int length) {
-		String s = ""; //$NON-NLS-1$
-		int j = i;
-		for (int k = 0; k < length; k++) {
-			s = (j % 2) + s;
-			j /= 2;
-		}
-		return s;
-	}
 
 	public ECPoint getGenerator() {
 		return points[cGenerator.getSelectionIndex()];
@@ -1200,6 +1159,15 @@ public class PublicParametersComposite extends Composite {
 
 	public FlexiBigInt getLargeOrder() {
 		return fbiOrderG;
+	}
+	
+	public int getCurveType() {
+		if (rbtnFP.getSelection())
+			return TYPE_FP;
+		else if (rbtnFM.getSelection())
+			return TYPE_FM;
+		else
+			throw new IllegalStateException("Can not find type of curve to return");
 	}
 
 } // @jve:decl-index=0:visual-constraint="10,10"

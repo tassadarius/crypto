@@ -12,6 +12,8 @@ package org.jcryptool.visual.ECDH.ui.view;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.lang.reflect.GenericSignatureFormatError;
+import java.util.regex.*;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.Command;
@@ -61,10 +63,12 @@ import org.jcryptool.core.util.constants.IConstants;
 import org.jcryptool.core.util.directories.DirectoryService;
 import org.jcryptool.core.util.fonts.FontService;
 import org.jcryptool.visual.ECDH.ECDHPlugin;
+import org.jcryptool.visual.ECDH.ECDHUtil;
 import org.jcryptool.visual.ECDH.Messages;
 import org.jcryptool.visual.ECDH.algorithm.EC;
 import org.jcryptool.visual.ECDH.algorithm.ECFm;
 import org.jcryptool.visual.ECDH.algorithm.ECPoint;
+import org.jcryptool.visual.ECDH.ui.wizards.PublicParametersComposite;
 import org.jcryptool.visual.ECDH.ui.wizards.PublicParametersWizard;
 import org.jcryptool.visual.ECDH.ui.wizards.SecretKeyComposite;
 import org.jcryptool.visual.ECDH.ui.wizards.SecretKeyWizard;
@@ -76,6 +80,7 @@ public class ECDHComposite extends Composite {
 
 	private Button btnSetPublicParameters = null;
 	private Button btnChooseSecrets = null;
+	private GridData gd_btnChooseSecrets;
 	private Button btnCreateSharedKeys = null;
 	private Button btnExchangeKeys = null;
 	private Button btnGenerateKey = null;
@@ -263,6 +268,10 @@ public class ECDHComposite extends Composite {
 		btnSetPublicParameters.setText(Messages.getString("ECDHView.setPublicParameters")); //$NON-NLS-1$
 		btnSetPublicParameters.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
+				// Information needed to adapt the button distance
+				int previousSize = textCurve.getLineCount() * textCurve.getLineHeight();
+				int currentSize;
+				
 				try {
 					if (showInformationDialogs) {
 						MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
@@ -272,6 +281,7 @@ public class ECDHComposite extends Composite {
 						messageBox.open();
 					}
 
+					
 					PublicParametersWizard wiz = new PublicParametersWizard(curve, generator);
 					WizardDialog dialog = new WizardDialog(Display.getCurrent().getActiveShell(), wiz);
 					dialog.setHelpAvailable(false);
@@ -279,13 +289,17 @@ public class ECDHComposite extends Composite {
 						reset(RESET_PUBLIC_PARAMETERS);
 						groupMain.requestLayout();
 						large = wiz.isLarge();
+						String curveString, generatorString;
 						if (large) {
 							largeCurve = wiz.getLargeCurve();
 							pointG = wiz.getLargeGenerator();
 							largeOrder = wiz.getLargeOrder();
-							textCurve.setText(
-									largeCurve.toString().replace("\n", " ").replace("<sup>", "^").replace("</sup>", "")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-							textGenerator.setText("(" + pointG.getXAffin() + ", " + pointG.getYAffin() + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+							curveString = formatLargeCurve(largeCurve.toString(), wiz.getLargeCurveType());
+							generatorString = formatLargeGenerator(pointG.getXAffin().toString(),
+																   pointG.getYAffin().toString(),
+																   wiz.getLargeCurveType());				
+							textCurve.setText(curveString);			
+							textGenerator.setText(generatorString);
 						} else {
 							curve = wiz.getCurve();
 							if (curve != null && curve.getType() == ECFm.ECFm)
@@ -301,12 +315,16 @@ public class ECDHComposite extends Composite {
 				} catch (Exception ex) {
 					LogUtil.logError(ECDHPlugin.PLUGIN_ID, ex);
 				}
+				currentSize = textCurve.getLineCount() * textCurve.getLineHeight();
+				gd_btnChooseSecrets.verticalIndent += currentSize - previousSize;  // Calculate the new size this way
+				canvasBtn.requestLayout();
+				canvasBtn.layout(true);
 			}
 		});
 
 		btnChooseSecrets = new Button(canvasBtn, SWT.NONE);
-		GridData gd_btnChooseSecrets = new GridData(SWT.FILL, SWT.FILL, true, false);
-		gd_btnChooseSecrets.verticalIndent = 50;
+		gd_btnChooseSecrets = new GridData(SWT.FILL, SWT.FILL, true, false);
+		gd_btnChooseSecrets.verticalIndent = 40;
 		gd_btnChooseSecrets.heightHint = 60;
 		btnChooseSecrets.setLayoutData(gd_btnChooseSecrets);
 		btnChooseSecrets.setEnabled(false);
@@ -1230,6 +1248,54 @@ public class ECDHComposite extends Composite {
 		}
 		groupMain.redraw();
 	}
+	
+	private static String formatLargeCurve(String largeCurveString, int type) {
+		String str = largeCurveString;
+		String lines[] = str.split("\\r?\\n");
+		String lineA, lineB, lineOrder;
+		
+		if (type == PublicParametersComposite.TYPE_FP) {
+			lineA = lines[1].substring(4, lines[1].length() - 1);
+			lineB = lines[2].substring(4, lines[2].length() - 1);
+			lineOrder = lines[3].trim().substring(14, lines[3].length() - 1);
+			
+			lineA = ECDHUtil.spaceString(lineA.toUpperCase());
+			lineB = ECDHUtil.spaceString(lineB.toUpperCase());
+			lineOrder = ECDHUtil.spaceString(lineOrder.toUpperCase());
+		}
+		else if (type == PublicParametersComposite.TYPE_FM) {			
+			lineA = lines[1].substring(4, lines[1].length() - 1);
+			lineB = lines[2].substring(4, lines[2].length() - 1);
+			lineOrder = lines[3].trim().substring(14, lines[3].length() - 1);
+			
+			lineA = lineA.toUpperCase();
+			lineB = lineB.toUpperCase();
+			lineOrder = lineA.toUpperCase();
+		}
+		else
+			return "";
+		
+		str = lines[0] + "\na = " + lineA + "\nb = " + lineB + "\nfield order = " + lineOrder;  
+		
+		str = str.replace("<sup>", "^"); //$NON-NLS-1$ //$NON-NLS-2$
+		str = str.replace("</sup>", "");  //$NON-NLS-1$ //$NON-NLS-2$
+		return str;
+	}
+	
+	private static String formatLargeGenerator(String x, String y, int type) {
+		String str;
+		x = x.trim().toUpperCase();
+		y = y.trim().toUpperCase();
+		
+		if (type == PublicParametersComposite.TYPE_FP) {
+			x = ECDHUtil.spaceString(x);
+			y = ECDHUtil.spaceString(y);
+		}
+		
+		str = "(" + x + ", " + y + ")";  
+		return str;
+	}
+
 
 	private Point multiplyLargePoint(Point p, FlexiBigInt m) {
 		if (m.doubleValue() == 0)
