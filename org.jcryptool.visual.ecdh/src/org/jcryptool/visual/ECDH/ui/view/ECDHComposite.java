@@ -143,6 +143,7 @@ public class ECDHComposite extends Composite {
 	private IServiceLocator serviceLocator;
 	private boolean keyAPressed = false;
 	private boolean keyBPressed = false;
+	private boolean chooseSecretButtonResets;
 	private Image id;
 
 	private static final int RESET_ALL = 0;
@@ -319,6 +320,8 @@ public class ECDHComposite extends Composite {
 				gd_btnChooseSecrets.verticalIndent += currentSize - previousSize;  // Calculate the new size this way
 				canvasBtn.requestLayout();
 				canvasBtn.layout(true);
+				btnSecretA.setEnabled(true);
+				btnSecretB.setEnabled(true);
 			}
 		});
 
@@ -340,9 +343,13 @@ public class ECDHComposite extends Composite {
 						messageBox.setMessage(Messages.getString("ECDHView.Step2")); //$NON-NLS-1$
 						messageBox.open();
 					}
-					btnSecretA.setEnabled(true);
-					btnSecretB.setEnabled(true);
-					btnChooseSecrets.setBackground(cGreen);
+					// This button changes behaviour. In the first place it has no special purpose.
+					// If the program has proceeded it will function as reset-to-this-step button
+					// Therefore this is false by default and set true in the next step
+					if (chooseSecretButtonResets) {
+						reset(ECDHComposite.RESET_SECRET_PARAMETERS);
+						chooseSecretButtonResets = false;
+					}
 				} catch (Exception ex) {
 					LogUtil.logError(ECDHPlugin.PLUGIN_ID, ex);
 				}
@@ -367,9 +374,6 @@ public class ECDHComposite extends Composite {
 						messageBox.setMessage(Messages.getString("ECDHView.Step3")); //$NON-NLS-1$
 						messageBox.open();
 					}
-					btnCalculateSharedA.setEnabled(true);
-					btnCalculateSharedB.setEnabled(true);
-					btnCreateSharedKeys.setBackground(cGreen);
 				} catch (Exception ex) {
 					LogUtil.logError(ECDHPlugin.PLUGIN_ID, ex);
 				}
@@ -397,6 +401,8 @@ public class ECDHComposite extends Composite {
 					new Animate().run();
 					btnGenerateKey.setEnabled(true);
 					btnExchangeKeys.setBackground(cGreen);
+					btnCalculateKeyA.setEnabled(true);
+					btnCalculateKeyB.setEnabled(true);
 				} catch (Exception ex) {
 					LogUtil.logError(ECDHPlugin.PLUGIN_ID, ex);
 				}
@@ -421,9 +427,7 @@ public class ECDHComposite extends Composite {
 						messageBox.setMessage(Messages.getString("ECDHView.Step5")); //$NON-NLS-1$
 						messageBox.open();
 					}
-					btnCalculateKeyA.setEnabled(true);
-					btnCalculateKeyB.setEnabled(true);
-					btnGenerateKey.setBackground(cGreen);
+					generateBothCommonKeys();
 				} catch (Exception ex) {
 					LogUtil.logError(ECDHPlugin.PLUGIN_ID, ex);
 				}
@@ -742,12 +746,16 @@ public class ECDHComposite extends Composite {
 					if (large) {
 						secretLargeA = wiz.getLargeSecret();
 						if (secretLargeA != null && secretLargeB != null) {
+							enableCalculateSharedButtons();
 							btnCreateSharedKeys.setEnabled(true);
+							btnChooseSecrets.setBackground(cGreen);
 						}
 					} else {
 						secretA = wiz.getSecret();
 						if (secretA > 0 && secretB > 0) {
+							enableCalculateSharedButtons();
 							btnCreateSharedKeys.setEnabled(true);
+							btnChooseSecrets.setBackground(cGreen);
 						}
 					}
 					textSecretA.setText("xxxxxxxxxxxxxxxxxxxxxx"); //$NON-NLS-1$
@@ -785,6 +793,9 @@ public class ECDHComposite extends Composite {
 					textSharedA.setText(shareA.toString());
 				}
 				btnCalculateSharedA.setBackground(cGreen);
+				// Tell the previous button btnChooseSecrets he acts in a reset function from now on 
+				chooseSecretButtonResets = true;
+				
 				if (showInformationDialogs) {
 					MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(), SWT.ICON_INFORMATION | SWT.OK);
 					messageBox.setText(Messages.getString("ECDHView.messageSharedKeyTitle")); //$NON-NLS-1$
@@ -793,6 +804,7 @@ public class ECDHComposite extends Composite {
 				}
 				if ((large && shareLargeA != null && shareLargeB != null) || (!large && shareA != null && shareB != null)) {
 					btnExchangeKeys.setEnabled(true);
+					btnCreateSharedKeys.setBackground(cGreen);
 				}
 			}
 		});
@@ -811,6 +823,8 @@ public class ECDHComposite extends Composite {
 		btnCalculateKeyA.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				keyAPressed = true;
+				generateKeyA();
+				btnCalculateKeyA.setBackground(cGreen);
 				if (large) {
 					keyLargeA = multiplyLargePoint(shareLargeB, secretLargeA);
 					textCommonKeyA.setText(keyLargeA.getXAffin().toString());
@@ -843,6 +857,8 @@ public class ECDHComposite extends Composite {
 					else
 						b = keyA.equals(keyB);
 					if (b) {
+						showKeyImage();
+						btnGenerateKey.setBackground(cGreen);
 						if (showInformationDialogs) {
 							MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
 									SWT.ICON_INFORMATION | SWT.OK);
@@ -860,7 +876,6 @@ public class ECDHComposite extends Composite {
 						}
 					}
 				}
-				canvasKey.redraw();
 			}
 
 		});
@@ -907,12 +922,16 @@ public class ECDHComposite extends Composite {
 					if (large) {
 						secretLargeB = wiz.getLargeSecret();
 						if (secretLargeA != null && secretLargeB != null) {
+							enableCalculateSharedButtons();
 							btnCreateSharedKeys.setEnabled(true);
+							btnChooseSecrets.setBackground(cGreen);
 						}
 					} else {
 						secretB = wiz.getSecret();
 						if (secretA > 0 && secretB > 0) {
+							enableCalculateSharedButtons();
 							btnCreateSharedKeys.setEnabled(true);
+							btnChooseSecrets.setBackground(cGreen);
 						}
 					}
 					textSecretB.setText("xxxxxxxxxxxxxxxxxxxxxx"); //$NON-NLS-1$
@@ -951,6 +970,9 @@ public class ECDHComposite extends Composite {
 					textSharedB.setText(shareB.toString());
 				}
 				btnCalculateSharedB.setBackground(cGreen);
+				// Tell the previous button btnChooseSecrets he acts in a reset function from now on 
+				chooseSecretButtonResets = true;
+				
 				if (showInformationDialogs) {
 					MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(), SWT.ICON_INFORMATION | SWT.OK);
 					messageBox.setText(Messages.getString("ECDHView.messageSharedKeyTitle")); //$NON-NLS-1$
@@ -959,6 +981,7 @@ public class ECDHComposite extends Composite {
 				}
 				if ((large && shareLargeA != null && shareLargeB != null) || (!large && shareA != null && shareB != null)) {
 					btnExchangeKeys.setEnabled(true);
+					btnCreateSharedKeys.setBackground(cGreen);
 				}
 			}
 
@@ -978,15 +1001,7 @@ public class ECDHComposite extends Composite {
 		btnCalculateKeyB.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				keyBPressed = true;
-				if (large) {
-					keyLargeB = multiplyLargePoint(shareLargeA, secretLargeB);
-					textCommonKeyB.setText(keyLargeB.getXAffin().toString());
-				} else {
-					keyB = curve.multiplyPoint(shareA, secretB);
-					if (keyB == null)
-						keyB = generator;
-					textCommonKeyB.setText(keyB.toString());
-				}
+				generateKeyB();
 				btnCalculateKeyB.setBackground(cGreen);
 				if (showInformationDialogs) {
 					MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(), SWT.ICON_INFORMATION | SWT.OK);
@@ -1010,6 +1025,8 @@ public class ECDHComposite extends Composite {
 					else
 						b = keyA.equals(keyB);
 					if (b) {
+						showKeyImage();
+						btnGenerateKey.setBackground(cGreen);
 						if (showInformationDialogs) {
 							MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
 									SWT.ICON_INFORMATION | SWT.OK);
@@ -1027,7 +1044,6 @@ public class ECDHComposite extends Composite {
 						}
 					}
 				}
-				canvasKey.redraw();
 			}
 		});
 		label = new Label(groupBob, SWT.NONE);
@@ -1045,8 +1061,8 @@ public class ECDHComposite extends Composite {
 		groupInfo.setText("Aktueller Schritt");
 
 		Text infoText = new Text(groupInfo, SWT.READ_ONLY | SWT.WRAP | SWT.MULTI);
-		infoText.setText("In Schritt 1 einigen sich die beiden Partner öffentlich auf ein Verfahren. Das bedeutet, dass "
-				+ "sie sich eine Kurve und dazugehörige Parameter aussuchen");
+		infoText.setText("In Schritt 1 einigen sich die beiden Partner ï¿½ffentlich auf ein Verfahren. Das bedeutet, dass "
+				+ "sie sich eine Kurve und dazugehï¿½rige Parameter aussuchen");
 		GridData infoTextLayout = new GridData(SWT.TOP, SWT.FILL, false, false, 1, 1);
 		infoTextLayout.widthHint = 300;
 		infoText.setLayoutData(infoTextLayout);
@@ -1294,6 +1310,60 @@ public class ECDHComposite extends Composite {
 		
 		str = "(" + x + ", " + y + ")";  
 		return str;
+	}
+	
+	/**
+	 * Calculates the Key A (for Alice) and sets the text {@code textCommonKeyA}
+	 */
+	private void generateKeyA() {
+		if (large) {
+			keyLargeA = multiplyLargePoint(shareLargeB, secretLargeA);
+			textCommonKeyA.setText(keyLargeA.getXAffin().toString());
+		} else {
+			keyA = curve.multiplyPoint(shareB, secretA);
+			if (keyA == null)
+				keyA = generator;
+			textCommonKeyA.setText(keyA.toString());
+		}
+	}
+	
+	/**
+	 * Calculates the Key B (for Bob) and sets the text {@code textCommonKeyB}
+	 */
+	private void generateKeyB() {
+		if (large) {
+			keyLargeB = multiplyLargePoint(shareLargeA, secretLargeB);
+			textCommonKeyB.setText(keyLargeB.getXAffin().toString());
+		} else {
+			keyB = curve.multiplyPoint(shareA, secretB);
+			if (keyB == null)
+				keyB = generator;
+			textCommonKeyB.setText(keyB.toString());
+		}
+	}
+	
+	private void generateBothCommonKeys() {
+		generateKeyA();
+		generateKeyB();
+		keyAPressed = true;
+		keyBPressed = true;
+		btnCalculateKeyA.setBackground(cGreen);
+		btnCalculateKeyB.setBackground(cGreen);
+		btnGenerateKey.setBackground(cGreen);
+		showKeyImage();
+	}
+	
+	private void showKeyImage() {
+		canvasKey.redraw();
+		
+	}
+	
+	/**
+	 * Enable the buttons {@code btnCalculateSharedA} and {@code btnCalculateSharedA} needed in next step
+	 */
+	private void enableCalculateSharedButtons() {
+		btnCalculateSharedA.setEnabled(true);
+		btnCalculateSharedB.setEnabled(true);
 	}
 
 
