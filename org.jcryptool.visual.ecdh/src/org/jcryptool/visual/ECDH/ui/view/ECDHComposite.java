@@ -1188,8 +1188,20 @@ public class ECDHComposite extends Composite {
 			logFile = new File(filename);
 	}
 
-	private void reset(int i) {
-		switch (i) {
+	/**
+	 *(Re)set the state of the plug-in.
+	 *
+	 * Multiple states are available which are specified by following constants
+	 * 
+	 * <ul>
+	 * 	<li>{@code ECDHComposite.RESET_ALL}</li>
+	 * <li>{@code ECDHComposite.RESET_PUBLIC_PARAMETERS}</li>
+	 * <li>{@code ECDHComposite.RESET_SECRET_PARAMETERS}</li>
+	 * </ul>
+	 * @param state to reset to
+	 */
+	private void reset(int state) {
+		switch (state) {
 		case RESET_ALL: // complete reset
 			curve = null;
 			valueN = 0;
@@ -1214,6 +1226,9 @@ public class ECDHComposite extends Composite {
 			btnSecretB.setBackground(cRed);
 			textSecretB.setText(""); //$NON-NLS-1$
 			btnCreateSharedKeys.setEnabled(false);
+			
+			btnCalculateSharedA.setEnabled(false);
+			btnCalculateSharedB.setEnabled(false);
 
 			/*
 			 * This part of the switch (RESET_PUBLIC_PARAMETERS) is called when the public
@@ -1240,10 +1255,8 @@ public class ECDHComposite extends Composite {
 
 			id.dispose();
 			btnCreateSharedKeys.setBackground(cRed);
-			btnCalculateSharedA.setEnabled(false);
 			btnCalculateSharedA.setBackground(cRed);
 			textSharedA.setText(""); //$NON-NLS-1$
-			btnCalculateSharedB.setEnabled(false);
 			btnCalculateSharedB.setBackground(cRed);
 			textSharedB.setText(""); //$NON-NLS-1$
 			btnExchangeKeys.setEnabled(false);
