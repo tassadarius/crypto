@@ -141,8 +141,6 @@ public class ECDHComposite extends Composite {
 	private final String saveToFileCommandId = "org.jcryptool.visual.ecdh.commands.saveToFile"; //$NON-NLS-1$
 	private AbstractHandler saveToFileHandler;
 	private IServiceLocator serviceLocator;
-	private boolean keyAPressed = false;
-	private boolean keyBPressed = false;
 	private boolean chooseSecretButtonResets;
 	private Image id;
 
@@ -572,21 +570,19 @@ public class ECDHComposite extends Composite {
 	}
 
 	private void createCanvasKey(Group parent) {
+		id = ECDHPlugin.getImageDescriptor("icons/key.png").createImage(); //$NON-NLS-1$
 		canvasKey = new Canvas(parent, SWT.NO_REDRAW_RESIZE);
 		GridData gd_canvasKey = new GridData(SWT.FILL, SWT.FILL, false, true, 3, 1);
 		gd_canvasKey.verticalIndent = 10;
 		gd_canvasKey.widthHint = 750;
 		gd_canvasKey.heightHint = 69;
 		canvasKey.setLayoutData(gd_canvasKey);
-
+		canvasKey.setVisible(false);
 		canvasKey.addPaintListener(new PaintListener() {
 
 			@Override
 			public void paintControl(PaintEvent e) {
-				id = ECDHPlugin.getImageDescriptor("icons/key.png").createImage(); //$NON-NLS-1$
-				if (keyAPressed && keyBPressed) {
 					e.gc.drawImage(id, 305, 0);
-				}
 			}
 		});
 	}
@@ -822,7 +818,6 @@ public class ECDHComposite extends Composite {
 		btnCalculateKeyA.setBackground(cRed);
 		btnCalculateKeyA.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				keyAPressed = true;
 				generateKeyA();
 				btnCalculateKeyA.setBackground(cGreen);
 				if (large) {
@@ -1000,7 +995,6 @@ public class ECDHComposite extends Composite {
 		btnCalculateKeyB.setBackground(cRed);
 		btnCalculateKeyB.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				keyBPressed = true;
 				generateKeyB();
 				btnCalculateKeyB.setBackground(cGreen);
 				if (showInformationDialogs) {
@@ -1225,8 +1219,7 @@ public class ECDHComposite extends Composite {
 			btnSecretB.setEnabled(false);
 			btnSecretB.setBackground(cRed);
 			textSecretB.setText(""); //$NON-NLS-1$
-			btnCreateSharedKeys.setEnabled(false);
-			
+			btnCreateSharedKeys.setEnabled(false);		
 			btnCalculateSharedA.setEnabled(false);
 			btnCalculateSharedB.setEnabled(false);
 
@@ -1250,10 +1243,8 @@ public class ECDHComposite extends Composite {
 			shareLargeB = null;
 			keyLargeA = null;
 			keyLargeB = null;
-			keyAPressed = false;
-			keyBPressed = false;
 
-			id.dispose();
+			canvasKey.setVisible(false);
 			btnCreateSharedKeys.setBackground(cRed);
 			btnCalculateSharedA.setBackground(cRed);
 			textSharedA.setText(""); //$NON-NLS-1$
@@ -1358,8 +1349,6 @@ public class ECDHComposite extends Composite {
 	private void generateBothCommonKeys() {
 		generateKeyA();
 		generateKeyB();
-		keyAPressed = true;
-		keyBPressed = true;
 		btnCalculateKeyA.setBackground(cGreen);
 		btnCalculateKeyB.setBackground(cGreen);
 		btnGenerateKey.setBackground(cGreen);
@@ -1367,6 +1356,7 @@ public class ECDHComposite extends Composite {
 	}
 	
 	private void showKeyImage() {
+		canvasKey.setVisible(true);
 		canvasKey.redraw();
 		
 	}
