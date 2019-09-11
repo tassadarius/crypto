@@ -104,6 +104,7 @@ public class ECDHComposite extends Composite {
 	private Group groupParameters = null;
 	private Group settings;
 	private Label placeholder;
+	private Text infoText;
 	private Text textCurve = null;
 	private Text textGenerator = null;
 	private Text textSecretA = null;
@@ -270,7 +271,6 @@ public class ECDHComposite extends Composite {
 				// Information needed to adapt the button distance
 				int previousSize = textCurve.getLineCount() * textCurve.getLineHeight();
 				int currentSize;
-				
 				try {
 					if (showInformationDialogs) {
 						MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
@@ -287,6 +287,8 @@ public class ECDHComposite extends Composite {
 					if (dialog.open() == Window.OK) {
 						reset(RESET_PUBLIC_PARAMETERS);
 						groupMain.requestLayout();
+						infoText.setText(Messages.getString("ECDHView.Step1") +
+										 Messages.getString("ECDHView.Step2"));
 						large = wiz.isLarge();
 						String curveString, generatorString;
 						if (large) {
@@ -346,6 +348,9 @@ public class ECDHComposite extends Composite {
 					// Therefore this is false by default and set true in the next step
 					if (chooseSecretButtonResets) {
 						reset(ECDHComposite.RESET_SECRET_PARAMETERS);
+						infoText.setText(Messages.getString("ECDHView.Step1") +
+						         		 Messages.getString("ECDHView.Step2") +
+						                 Messages.getString("ECDHView.Step3"));
 						chooseSecretButtonResets = false;
 					}
 				} catch (Exception ex) {
@@ -397,6 +402,11 @@ public class ECDHComposite extends Composite {
 						messageBox.open();
 					}
 					new Animate().run();
+					infoText.setText(Messages.getString("ECDHView.Step1") +
+							         Messages.getString("ECDHView.Step2") +
+							         Messages.getString("ECDHView.Step3") +
+							         Messages.getString("ECDHView.Step4") +
+							         Messages.getString("ECDHView.Step5"));
 					btnGenerateKey.setEnabled(true);
 					btnExchangeKeys.setBackground(cGreen);
 					btnCalculateKeyA.setEnabled(true);
@@ -574,7 +584,7 @@ public class ECDHComposite extends Composite {
 		canvasKey = new Canvas(parent, SWT.NO_REDRAW_RESIZE);
 		GridData gd_canvasKey = new GridData(SWT.FILL, SWT.FILL, false, true, 3, 1);
 		gd_canvasKey.verticalIndent = 10;
-		gd_canvasKey.widthHint = 750;
+		gd_canvasKey.widthHint = 850;
 		gd_canvasKey.heightHint = 69;
 		canvasKey.setLayoutData(gd_canvasKey);
 		canvasKey.setVisible(false);
@@ -801,6 +811,10 @@ public class ECDHComposite extends Composite {
 				if ((large && shareLargeA != null && shareLargeB != null) || (!large && shareA != null && shareB != null)) {
 					btnExchangeKeys.setEnabled(true);
 					btnCreateSharedKeys.setBackground(cGreen);
+					infoText.setText(Messages.getString("ECDHView.Step1") +
+					         		 Messages.getString("ECDHView.Step2") +
+					         		 Messages.getString("ECDHView.Step3") +
+					         		 Messages.getString("ECDHView.Step4"));
 				}
 			}
 		});
@@ -852,7 +866,7 @@ public class ECDHComposite extends Composite {
 					else
 						b = keyA.equals(keyB);
 					if (b) {
-						showKeyImage();
+						showKeyImageUpdateText();
 						btnGenerateKey.setBackground(cGreen);
 						if (showInformationDialogs) {
 							MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
@@ -977,6 +991,10 @@ public class ECDHComposite extends Composite {
 				if ((large && shareLargeA != null && shareLargeB != null) || (!large && shareA != null && shareB != null)) {
 					btnExchangeKeys.setEnabled(true);
 					btnCreateSharedKeys.setBackground(cGreen);
+					infoText.setText(Messages.getString("ECDHView.Step1") +
+					         		 Messages.getString("ECDHView.Step2") +
+					         		 Messages.getString("ECDHView.Step3") +
+					         		 Messages.getString("ECDHView.Step4"));
 				}
 			}
 
@@ -1019,7 +1037,7 @@ public class ECDHComposite extends Composite {
 					else
 						b = keyA.equals(keyB);
 					if (b) {
-						showKeyImage();
+						showKeyImageUpdateText();
 						btnGenerateKey.setBackground(cGreen);
 						if (showInformationDialogs) {
 							MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
@@ -1054,11 +1072,10 @@ public class ECDHComposite extends Composite {
 		groupInfo.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, true, 1, 2));
 		groupInfo.setText("Aktueller Schritt");
 
-		Text infoText = new Text(groupInfo, SWT.READ_ONLY | SWT.WRAP | SWT.MULTI);
-		infoText.setText("In Schritt 1 einigen sich die beiden Partner �ffentlich auf ein Verfahren. Das bedeutet, dass "
-				+ "sie sich eine Kurve und dazugeh�rige Parameter aussuchen");
-		GridData infoTextLayout = new GridData(SWT.TOP, SWT.FILL, false, false, 1, 1);
-		infoTextLayout.widthHint = 300;
+		infoText = new Text(groupInfo, SWT.READ_ONLY | SWT.WRAP | SWT.MULTI | SWT.V_SCROLL);
+		infoText.setText(Messages.getString("ECDHView.Step1"));
+		GridData infoTextLayout = new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1);
+		infoTextLayout.widthHint = 370;
 		infoText.setLayoutData(infoTextLayout);
 	}
 
@@ -1205,6 +1222,7 @@ public class ECDHComposite extends Composite {
 			textCurve.setText(""); //$NON-NLS-1$
 			textGenerator.setText(""); //$NON-NLS-1$
 			btnSetPublicParameters.setBackground(cRed);
+			infoText.setText(Messages.getString("ECDHView.Step1"));
 		case RESET_PUBLIC_PARAMETERS:// reset from Set public parameters button
 			secretA = -1;
 			secretB = -1;
@@ -1352,13 +1370,18 @@ public class ECDHComposite extends Composite {
 		btnCalculateKeyA.setBackground(cGreen);
 		btnCalculateKeyB.setBackground(cGreen);
 		btnGenerateKey.setBackground(cGreen);
-		showKeyImage();
+		showKeyImageUpdateText();
 	}
 	
-	private void showKeyImage() {
+	private void showKeyImageUpdateText() {
 		canvasKey.setVisible(true);
 		canvasKey.redraw();
-		
+		infoText.setText(Messages.getString("ECDHView.Step1") +
+						 Messages.getString("ECDHView.Step2") +
+						 Messages.getString("ECDHView.Step3") +
+						 Messages.getString("ECDHView.Step4") +
+						 Messages.getString("ECDHView.Step5") +
+						 Messages.getString("ECDHView.Step6"));
 	}
 	
 	/**
@@ -1367,6 +1390,9 @@ public class ECDHComposite extends Composite {
 	private void enableCalculateSharedButtons() {
 		btnCalculateSharedA.setEnabled(true);
 		btnCalculateSharedB.setEnabled(true);
+		infoText.setText(Messages.getString("ECDHView.Step1") +
+		         		 Messages.getString("ECDHView.Step2") +
+		         		 Messages.getString("ECDHView.Step3"));
 	}
 
 
