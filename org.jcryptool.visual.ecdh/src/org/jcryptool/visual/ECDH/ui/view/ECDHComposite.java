@@ -12,9 +12,6 @@ package org.jcryptool.visual.ECDH.ui.view;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.lang.reflect.GenericSignatureFormatError;
-import java.util.regex.*;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.CommandManager;
@@ -90,7 +87,6 @@ public class ECDHComposite extends Composite {
 	private Button btnSecretB = null;
 	private Button btnCalculateSharedB = null;
 	private Button btnCalculateKeyB = null;
-	private Button btn_showInfos;
 	private Button btn_showAnimation;
 	private Canvas canvasBtn = null;
 	private Canvas canvasExchange = null;
@@ -136,7 +132,6 @@ public class ECDHComposite extends Composite {
 	private Point pointG;
 	private FlexiBigInt largeOrder;
 	private boolean showAnimation = true;
-	private boolean showInformationDialogs = false;
 	private final String saveToEditorCommandId = "org.jcryptool.visual.ecdh.commands.saveToEditor"; //$NON-NLS-1$
 	private AbstractHandler saveToEditorHandler;
 	private final String saveToFileCommandId = "org.jcryptool.visual.ecdh.commands.saveToFile"; //$NON-NLS-1$
@@ -168,15 +163,6 @@ public class ECDHComposite extends Composite {
 		};
 		defineCommand(showAnimationCommandId, Messages.getString("ECDHComposite.0"), showAnimationHandler); //$NON-NLS-1$
 		addContributionItem(dropDownMenu, showAnimationCommandId, null, null, SWT.CHECK);
-		final String showInfoDialogsCommandId = "org.jcryptool.visual.ecdh.commands.showInfoDialogs"; //$NON-NLS-1$
-		AbstractHandler showInfoDialogsHandler = new AbstractHandler() {
-			public Object execute(ExecutionEvent event) {
-				toggleInformationDialogs();
-				return null;
-			}
-		};
-		defineCommand(showInfoDialogsCommandId, Messages.getString("ECDHComposite.1"), showInfoDialogsHandler); //$NON-NLS-1$
-		addContributionItem(dropDownMenu, showInfoDialogsCommandId, null, null, SWT.CHECK);
 		dropDownMenu.add(new Separator());
 		saveToEditorHandler = new AbstractHandler() {
 			public Object execute(ExecutionEvent event) {
@@ -219,23 +205,6 @@ public class ECDHComposite extends Composite {
 		settings.setLayout(new GridLayout());
 		settings.setText(Messages.getString("ECDHComposite.settingsGroupTitle")); //$NON-NLS-1$
 
-		btn_showInfos = new Button(settings, SWT.CHECK);
-		btn_showInfos.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-		btn_showInfos.setSelection(showInformationDialogs);
-		btn_showInfos.setText(Messages.getString("ECDHComposite.5")); //$NON-NLS-1$
-		btn_showInfos.addSelectionListener(new SelectionListener() {
-
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				showInformationDialogs = showInformationDialogs ? false : true;
-			}
-
-			@Override
-			public void widgetDefaultSelected(SelectionEvent e) {
-				widgetSelected(e);
-			}
-		});
-
 		btn_showAnimation = new Button(settings, SWT.CHECK);
 		btn_showAnimation.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 		btn_showAnimation.setSelection(showAnimation);
@@ -271,51 +240,40 @@ public class ECDHComposite extends Composite {
 				// Information needed to adapt the button distance
 				int previousSize = textCurve.getLineCount() * textCurve.getLineHeight();
 				int currentSize;
-				try {
-					if (showInformationDialogs) {
-						MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
-								SWT.ICON_INFORMATION | SWT.OK);
-						messageBox.setText(Messages.getString("ECDHView.setPublicParameters")); //$NON-NLS-1$
-						messageBox.setMessage(Messages.getString("ECDHView.Step1")); //$NON-NLS-1$
-						messageBox.open();
+				
+				PublicParametersWizard wiz = new PublicParametersWizard(curve, generator);
+				WizardDialog dialog = new WizardDialog(Display.getCurrent().getActiveShell(), wiz);
+				dialog.setHelpAvailable(false);
+				if (dialog.open() == Window.OK) {
+					reset(RESET_PUBLIC_PARAMETERS);
+					groupMain.requestLayout();
+					infoText.setText(Messages.getString("ECDHView.Step1") +
+									 Messages.getString("ECDHView.Step2"));
+					large = wiz.isLarge();
+					String curveString, generatorString;
+					if (large) {
+						largeCurve = wiz.getLargeCurve();
+						pointG = wiz.getLargeGenerator();
+						largeOrder = wiz.getLargeOrder();
+						curveString = formatLargeCurve(largeCurve.toString(), wiz.getLargeCurveType());
+						generatorString = formatLargeGenerator(pointG.getXAffin().toString(),
+															   pointG.getYAffin().toString(),
+															   wiz.getLargeCurveType());				
+						textCurve.setText(curveString);			
+						textGenerator.setText(generatorString);
+					} else {
+						curve = wiz.getCurve();
+						if (curve != null && curve.getType() == ECFm.ECFm)
+							elements = ((ECFm) curve).getElements();
+						textCurve.setText(curve.toString());
+						generator = wiz.getGenerator();
+						valueN = wiz.getOrder();
+						textGenerator.setText(generator.toString());
 					}
-
-					
-					PublicParametersWizard wiz = new PublicParametersWizard(curve, generator);
-					WizardDialog dialog = new WizardDialog(Display.getCurrent().getActiveShell(), wiz);
-					dialog.setHelpAvailable(false);
-					if (dialog.open() == Window.OK) {
-						reset(RESET_PUBLIC_PARAMETERS);
-						groupMain.requestLayout();
-						infoText.setText(Messages.getString("ECDHView.Step1") +
-										 Messages.getString("ECDHView.Step2"));
-						large = wiz.isLarge();
-						String curveString, generatorString;
-						if (large) {
-							largeCurve = wiz.getLargeCurve();
-							pointG = wiz.getLargeGenerator();
-							largeOrder = wiz.getLargeOrder();
-							curveString = formatLargeCurve(largeCurve.toString(), wiz.getLargeCurveType());
-							generatorString = formatLargeGenerator(pointG.getXAffin().toString(),
-																   pointG.getYAffin().toString(),
-																   wiz.getLargeCurveType());				
-							textCurve.setText(curveString);			
-							textGenerator.setText(generatorString);
-						} else {
-							curve = wiz.getCurve();
-							if (curve != null && curve.getType() == ECFm.ECFm)
-								elements = ((ECFm) curve).getElements();
-							textCurve.setText(curve.toString());
-							generator = wiz.getGenerator();
-							valueN = wiz.getOrder();
-							textGenerator.setText(generator.toString());
-						}
-						btnChooseSecrets.setEnabled(true);
-						btnSetPublicParameters.setBackground(cGreen);
-					}
-				} catch (Exception ex) {
-					LogUtil.logError(ECDHPlugin.PLUGIN_ID, ex);
+					btnChooseSecrets.setEnabled(true);
+					btnSetPublicParameters.setBackground(cGreen);
 				}
+			
 				currentSize = textCurve.getLineCount() * textCurve.getLineHeight();
 				gd_btnChooseSecrets.verticalIndent += currentSize - previousSize;  // Calculate the new size this way
 				canvasBtn.requestLayout();
@@ -335,26 +293,15 @@ public class ECDHComposite extends Composite {
 		btnChooseSecrets.setText(Messages.getString("ECDHView.chooseSecrets")); //$NON-NLS-1$
 		btnChooseSecrets.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				try {
-					if (showInformationDialogs) {
-						MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
-								SWT.ICON_INFORMATION | SWT.OK);
-						messageBox.setText(Messages.getString("ECDHView.chooseSecrets")); //$NON-NLS-1$
-						messageBox.setMessage(Messages.getString("ECDHView.Step2")); //$NON-NLS-1$
-						messageBox.open();
-					}
-					// This button changes behaviour. In the first place it has no special purpose.
-					// If the program has proceeded it will function as reset-to-this-step button
-					// Therefore this is false by default and set true in the next step
-					if (chooseSecretButtonResets) {
-						reset(ECDHComposite.RESET_SECRET_PARAMETERS);
-						infoText.setText(Messages.getString("ECDHView.Step1") +
-						         		 Messages.getString("ECDHView.Step2") +
-						                 Messages.getString("ECDHView.Step3"));
-						chooseSecretButtonResets = false;
-					}
-				} catch (Exception ex) {
-					LogUtil.logError(ECDHPlugin.PLUGIN_ID, ex);
+				// This button changes behaviour. In the first place it has no special purpose.
+				// If the program has proceeded it will function as reset-to-this-step button
+				// Therefore this is false by default and set true in the next step
+				if (chooseSecretButtonResets) {
+					reset(ECDHComposite.RESET_SECRET_PARAMETERS);
+					infoText.setText(Messages.getString("ECDHView.Step1") +
+					         		 Messages.getString("ECDHView.Step2") +
+					                 Messages.getString("ECDHView.Step3"));
+					chooseSecretButtonResets = false;
 				}
 			}
 		});
@@ -367,21 +314,6 @@ public class ECDHComposite extends Composite {
 		btnCreateSharedKeys.setEnabled(false);
 		btnCreateSharedKeys.setBackground(cRed);
 		btnCreateSharedKeys.setText(Messages.getString("ECDHView.createSharedKeys")); //$NON-NLS-1$
-		btnCreateSharedKeys.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				try {
-					if (showInformationDialogs) {
-						MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
-								SWT.ICON_INFORMATION | SWT.OK);
-						messageBox.setText(Messages.getString("ECDHView.createSharedKeys")); //$NON-NLS-1$
-						messageBox.setMessage(Messages.getString("ECDHView.Step3")); //$NON-NLS-1$
-						messageBox.open();
-					}
-				} catch (Exception ex) {
-					LogUtil.logError(ECDHPlugin.PLUGIN_ID, ex);
-				}
-			}
-		});
 
 		btnExchangeKeys = new Button(canvasBtn, SWT.NONE);
 		GridData gd_btnExchangeKeys = new GridData(SWT.FILL, SWT.FILL, true, false);
@@ -393,27 +325,16 @@ public class ECDHComposite extends Composite {
 		btnExchangeKeys.setText(Messages.getString("ECDHView.exchangeSharedKeys")); //$NON-NLS-1$
 		btnExchangeKeys.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				try {
-					if (showInformationDialogs) {
-						MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
-								SWT.ICON_INFORMATION | SWT.OK);
-						messageBox.setText(Messages.getString("ECDHView.exchangeSharedKeys")); //$NON-NLS-1$
-						messageBox.setMessage(Messages.getString("ECDHView.Step4")); //$NON-NLS-1$
-						messageBox.open();
-					}
-					new Animate().run();
-					infoText.setText(Messages.getString("ECDHView.Step1") +
-							         Messages.getString("ECDHView.Step2") +
-							         Messages.getString("ECDHView.Step3") +
-							         Messages.getString("ECDHView.Step4") +
-							         Messages.getString("ECDHView.Step5"));
-					btnGenerateKey.setEnabled(true);
-					btnExchangeKeys.setBackground(cGreen);
-					btnCalculateKeyA.setEnabled(true);
-					btnCalculateKeyB.setEnabled(true);
-				} catch (Exception ex) {
-					LogUtil.logError(ECDHPlugin.PLUGIN_ID, ex);
-				}
+				new Animate().run();
+				infoText.setText(Messages.getString("ECDHView.Step1") +
+						         Messages.getString("ECDHView.Step2") +
+						         Messages.getString("ECDHView.Step3") +
+						         Messages.getString("ECDHView.Step4") +
+						         Messages.getString("ECDHView.Step5"));
+				btnGenerateKey.setEnabled(true);
+				btnExchangeKeys.setBackground(cGreen);
+				btnCalculateKeyA.setEnabled(true);
+				btnCalculateKeyB.setEnabled(true);
 			}
 		});
 
@@ -427,18 +348,7 @@ public class ECDHComposite extends Composite {
 		btnGenerateKey.setText(Messages.getString("ECDHView.generateCommonKey")); //$NON-NLS-1$
 		btnGenerateKey.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				try {
-					if (showInformationDialogs) {
-						MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
-								SWT.ICON_INFORMATION | SWT.OK);
-						messageBox.setText(Messages.getString("ECDHView.generateCommonKey")); //$NON-NLS-1$
-						messageBox.setMessage(Messages.getString("ECDHView.Step5")); //$NON-NLS-1$
-						messageBox.open();
-					}
-					generateBothCommonKeys();
-				} catch (Exception ex) {
-					LogUtil.logError(ECDHPlugin.PLUGIN_ID, ex);
-				}
+				generateBothCommonKeys();
 			}
 		});
 
@@ -551,9 +461,6 @@ public class ECDHComposite extends Composite {
 		stDescription.setLayoutData(gd_stDescription);
 	}
 
-	protected void toggleInformationDialogs() {
-		showInformationDialogs = !showInformationDialogs;
-	}
 
 	protected void toggleAnimation() {
 		showAnimation = !showAnimation;
@@ -766,14 +673,6 @@ public class ECDHComposite extends Composite {
 					}
 					textSecretA.setText("xxxxxxxxxxxxxxxxxxxxxx"); //$NON-NLS-1$
 					btnSecretA.setBackground(cGreen);
-					if (showInformationDialogs) {
-						MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
-								SWT.ICON_INFORMATION | SWT.OK);
-						messageBox.setText("Alice " + Messages.getString("ECDHView.messageSecretKeyTitle")); //$NON-NLS-1$ //$NON-NLS-2$
-						messageBox.setMessage("Alice " + Messages.getString("ECDHView.messageSecretKey") + " Alice" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-								+ Messages.getString("ECDHView.messageSecretKey2")); //$NON-NLS-1$
-						messageBox.open();
-					}
 				}
 			}
 		});
@@ -802,12 +701,6 @@ public class ECDHComposite extends Composite {
 				// Tell the previous button btnChooseSecrets he acts in a reset function from now on 
 				chooseSecretButtonResets = true;
 				
-				if (showInformationDialogs) {
-					MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(), SWT.ICON_INFORMATION | SWT.OK);
-					messageBox.setText(Messages.getString("ECDHView.messageSharedKeyTitle")); //$NON-NLS-1$
-					messageBox.setMessage("Alice " + Messages.getString("ECDHView.messageSharedKeyHer")); //$NON-NLS-1$ //$NON-NLS-2$
-					messageBox.open();
-				}
 				if ((large && shareLargeA != null && shareLargeB != null) || (!large && shareA != null && shareB != null)) {
 					btnExchangeKeys.setEnabled(true);
 					btnCreateSharedKeys.setBackground(cGreen);
@@ -844,12 +737,6 @@ public class ECDHComposite extends Composite {
 					textCommonKeyA.setText(keyA.toString());
 				}
 				btnCalculateKeyA.setBackground(cGreen);
-				if (showInformationDialogs) {
-					MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(), SWT.ICON_INFORMATION | SWT.OK);
-					messageBox.setText(Messages.getString("ECDHView.messageCommonKeyTitle")); //$NON-NLS-1$
-					messageBox.setMessage("Alice " + Messages.getString("ECDHView.messageCommonKey")); //$NON-NLS-1$ //$NON-NLS-2$
-					messageBox.open();
-				}
 				Boolean b;
 				if (large)
 					b = keyLargeA != null && keyLargeB != null;
@@ -868,21 +755,8 @@ public class ECDHComposite extends Composite {
 					if (b) {
 						showKeyImageUpdateText();
 						btnGenerateKey.setBackground(cGreen);
-						if (showInformationDialogs) {
-							MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
-									SWT.ICON_INFORMATION | SWT.OK);
-							messageBox.setText(Messages.getString("ECDHView.messageSuccesTitle")); //$NON-NLS-1$
-							messageBox.setMessage(Messages.getString("ECDHView.messageSucces")); //$NON-NLS-1$
-							messageBox.open();
-						}
 					} else {
-						if (showInformationDialogs) {
-							MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
-									SWT.ICON_ERROR | SWT.OK);
-							messageBox.setText(Messages.getString("ECDHView.messageFailTitle")); //$NON-NLS-1$
-							messageBox.setMessage(Messages.getString("ECDHView.messageFail")); //$NON-NLS-1$
-							messageBox.open();
-						}
+						infoText.append(Messages.getString("ECDHView.messageFail"));
 					}
 				}
 			}
@@ -945,14 +819,6 @@ public class ECDHComposite extends Composite {
 					}
 					textSecretB.setText("xxxxxxxxxxxxxxxxxxxxxx"); //$NON-NLS-1$
 					btnSecretB.setBackground(cGreen);
-					if (showInformationDialogs) {
-						MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
-								SWT.ICON_INFORMATION | SWT.OK);
-						messageBox.setText("Bob " + Messages.getString("ECDHView.messageSecretKeyTitle")); //$NON-NLS-1$ //$NON-NLS-2$
-						messageBox.setMessage("Bob " + Messages.getString("ECDHView.messageSecretKey") + " Bob" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-								+ Messages.getString("ECDHView.messageSecretKey2")); //$NON-NLS-1$
-						messageBox.open();
-					}
 				}
 			}
 
@@ -982,12 +848,6 @@ public class ECDHComposite extends Composite {
 				// Tell the previous button btnChooseSecrets he acts in a reset function from now on 
 				chooseSecretButtonResets = true;
 				
-				if (showInformationDialogs) {
-					MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(), SWT.ICON_INFORMATION | SWT.OK);
-					messageBox.setText(Messages.getString("ECDHView.messageSharedKeyTitle")); //$NON-NLS-1$
-					messageBox.setMessage("Bob " + Messages.getString("ECDHView.messageSharedKeyHis")); //$NON-NLS-1$ //$NON-NLS-2$
-					messageBox.open();
-				}
 				if ((large && shareLargeA != null && shareLargeB != null) || (!large && shareA != null && shareB != null)) {
 					btnExchangeKeys.setEnabled(true);
 					btnCreateSharedKeys.setBackground(cGreen);
@@ -1015,12 +875,6 @@ public class ECDHComposite extends Composite {
 			public void widgetSelected(SelectionEvent e) {
 				generateKeyB();
 				btnCalculateKeyB.setBackground(cGreen);
-				if (showInformationDialogs) {
-					MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(), SWT.ICON_INFORMATION | SWT.OK);
-					messageBox.setText(Messages.getString("ECDHView.messageCommonKeyTitle")); //$NON-NLS-1$
-					messageBox.setMessage("Bob " + Messages.getString("ECDHView.messageCommonKey")); //$NON-NLS-1$ //$NON-NLS-2$
-					messageBox.open();
-				}
 				Boolean b;
 				if (large)
 					b = keyLargeA != null && keyLargeB != null;
@@ -1039,21 +893,8 @@ public class ECDHComposite extends Composite {
 					if (b) {
 						showKeyImageUpdateText();
 						btnGenerateKey.setBackground(cGreen);
-						if (showInformationDialogs) {
-							MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
-									SWT.ICON_INFORMATION | SWT.OK);
-							messageBox.setText(Messages.getString("ECDHView.messageSuccesTitle")); //$NON-NLS-1$
-							messageBox.setMessage(Messages.getString("ECDHView.messageSucces")); //$NON-NLS-1$
-							messageBox.open();
-						}
 					} else {
-						if (showInformationDialogs) {
-							MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell(),
-									SWT.ICON_ERROR | SWT.OK);
-							messageBox.setText(Messages.getString("ECDHView.messageFailTitle")); //$NON-NLS-1$
-							messageBox.setMessage(Messages.getString("ECDHView.messageFail")); //$NON-NLS-1$
-							messageBox.open();
-						}
+						infoText.append(Messages.getString("ECDHView.messageFail"));
 					}
 				}
 			}
@@ -1381,7 +1222,7 @@ public class ECDHComposite extends Composite {
 						 Messages.getString("ECDHView.Step3") +
 						 Messages.getString("ECDHView.Step4") +
 						 Messages.getString("ECDHView.Step5") +
-						 Messages.getString("ECDHView.Step6"));
+						 Messages.getString("ECDHView.messageSucces"));
 	}
 	
 	/**
