@@ -28,6 +28,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Path;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -274,51 +275,7 @@ public class ECDHComposite extends Composite {
 
 			@Override
 			public void paintControl(PaintEvent e) {
-
-				// der Strich soll bei 1/3 links der Buttonbreite verlaufen
-				int x1 = btnSetPublicParameters.getBounds().x + (btnSetPublicParameters.getBounds().width / 3) - 5;
-				int y1 = btnSetPublicParameters.getBounds().y;
-				int width = 10;
-
-				Path connection = new Path(Display.getCurrent());
-				// waagerechte linie Oben
-				connection.moveTo(x1, y1);
-
-				int x2 = x1 + width;
-				connection.lineTo(x2, y1);
-
-				// 60(Buttonhöhe) + 40(Abstand der auch zeischen den anderen bUttons ist) -
-				// 5(damit ser Strich mittig ist)
-				int y3 = btnGenerateKey.getBounds().y + 120 - 5;
-				connection.lineTo(x2, y3);
-
-				// 40 Platz den die Pfeilspitze haben soll
-				int x4 = canvasBtn.getBounds().x + canvasBtn.getBounds().width - 40;
-				connection.lineTo(x4, y3);
-
-				// Strich geht 10 nach oben
-				int y5 = y3 - 10;
-				connection.lineTo(x4, y5);
-
-				// Pfeilspitze
-				int x6 = canvasBtn.getBounds().x + canvasBtn.getBounds().width - 10;
-				int y6 = y5 + 15;
-				connection.lineTo(x6, y6);
-
-				int y7 = y6 + 15;
-				connection.lineTo(x4, y7);
-
-				int y8 = y7 - 10;
-				connection.lineTo(x4, y8);
-
-				// weiter zur linken unteren Ecke
-				connection.lineTo(x1, y8);
-
-				// und wieder nach oben
-				connection.lineTo(x1, y1);
-
-				e.gc.setBackground(grey);
-				e.gc.fillPath(connection);
+				paintArrows(e);
 			}
 		});
 
@@ -1220,6 +1177,60 @@ public class ECDHComposite extends Composite {
 				messages[1] = intToBitString(shareB.x, 5) + " " + intToBitString(shareB.y, 5); //$NON-NLS-1$
 		}				
 		return messages;
+	}
+	
+	/**
+	 * Paint the grey arrows in the middle between Alice and Bob
+	 * 
+	 * @param e the PaintListener from a PaintEvent 
+	 */
+	private void paintArrows(PaintEvent e) {
+		
+		int x1, y1, width, x2, y3, x4, y5, x6, y6, y7, y8;
+		
+		// The line should be at 1/3 left of the button width
+		Rectangle bounds = btnSetPublicParameters.getBounds();
+		x1 = bounds.x + (bounds.width / 3) - 5;
+		y1 = bounds.y;
+		width = 10;
+
+		Path connection = new Path(Display.getCurrent());
+		// Horizontal line on top
+		connection.moveTo(x1, y1);
+		x2 = x1 + width;
+		connection.lineTo(x2, y1);
+
+		// 60 (button height) + 40 - 5 (so it's in the middle)
+		y3 = btnGenerateKey.getBounds().y + 120 - 5;
+		connection.lineTo(x2, y3);
+
+		// Arrow heads need 40px space
+		x4 = canvasBtn.getBounds().x + canvasBtn.getBounds().width - 40;
+		connection.lineTo(x4, y3);
+
+		// Line overlaps 10px
+		y5 = y3 - 10;
+		connection.lineTo(x4, y5);
+
+		// Arrow head
+		x6 = canvasBtn.getBounds().x + canvasBtn.getBounds().width - 10;
+		y6 = y5 + 15;
+		connection.lineTo(x6, y6);
+
+		y7 = y6 + 15;
+		connection.lineTo(x4, y7);
+
+		y8 = y7 - 10;
+		connection.lineTo(x4, y8);
+
+		// Connect to bottom left line
+		connection.lineTo(x1, y8);
+
+		// and back again to top
+		connection.lineTo(x1, y1);
+
+		e.gc.setBackground(grey);
+		e.gc.fillPath(connection);
 	}
 
 }

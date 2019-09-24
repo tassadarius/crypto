@@ -8,9 +8,6 @@
  *******************************************************************************/
 // -----END DISCLAIMER-----
 package org.jcryptool.visual.ECDH.ui.view;
-/** 
- *   @author original author unknown
- */
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
@@ -21,14 +18,14 @@ import org.jcryptool.core.logging.utils.LogUtil;
 import org.jcryptool.core.util.fonts.FontService;
 import org.jcryptool.visual.ECDH.ECDHPlugin;
 
+/** 
+ *   @author original author unknown
+ *   Class which handles the animation in the main view exchanging the message.
+ *   
+ *   IMPORTANT: I know this animation doesn't work on Linux, maybe take a look at that
+ *   TODO: Fix this class not working on Linux
+ */
 public class Animation extends Thread {
-	/**
-	 * Class which handles the animation in the main view exchanging the message.
-	 * 
-	 * IMPORTANT: I know this animation doesn't work on Linux, maybe take a look at that
-	 * TODO: Fix this class not working on Linux
-	 */
-
 	private Canvas canvasExchange;
 	private String messageA;
 	private String messageB;
@@ -49,11 +46,10 @@ public class Animation extends Thread {
 		this.messageB = messageB;
 	}
 
+	/**
+	 * Play and show the animation. Messages should be set beforehand
+	 */
 	public void run() {
-		/**
-		 * Play and show the animation. Messages should be set beforehand
-		 */
-
 		GC gc = new GC(canvasExchange);
 		Image original = new Image(canvasExchange.getDisplay(), canvasExchange.getBounds().width,
 				canvasExchange.getBounds().height);
