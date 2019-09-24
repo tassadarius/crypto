@@ -238,7 +238,12 @@ public class ECDHComposite extends Composite {
 		btnExchangeKeys.setText(Messages.getString("ECDHView.exchangeSharedKeys")); //$NON-NLS-1$
 		btnExchangeKeys.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				new Animate().run();
+				if (showAnimation) {
+					String[] animationMessages = buildAnimationMessages();
+					String messageA = animationMessages[0];
+					String messageB = animationMessages[1];
+					new Animation(canvasExchange, messageA, messageB).run();
+				}
 				infoText.setText(Messages.getString("ECDHView.Step1") +
 						         Messages.getString("ECDHView.Step2") +
 						         Messages.getString("ECDHView.Step3") +
@@ -1194,88 +1199,27 @@ public class ECDHComposite extends Composite {
 		else
 			return p.add(multiplyLargePoint(p, m.subtract(new FlexiBigInt("1")))); //$NON-NLS-1$
 	}
-
-	class Animate extends Thread {
-		public void run() {
-			if (showAnimation) {
-				GC gc = new GC(canvasExchange);
-				Image original = new Image(canvasExchange.getDisplay(), canvasExchange.getBounds().width,
-						canvasExchange.getBounds().height);
-				gc.copyArea(original, 0, canvasExchange.getBounds().height / 2);
-
-				int canvasExchangeWidth = canvasExchange.getBounds().width;
-				int canvasExchangeHeight = canvasExchange.getBounds().height;
-
-				// x und y bestimmen die startposition von den 1 und 0
-				int x = -70;
-				int y = 10;
-				String msg;
-
-				if (large) {
-					msg = shareLargeA.getXAffin().toString(2).substring(0, 4) + " " //$NON-NLS-1$
-							+ shareLargeA.getYAffin().toString(2).substring(0, 4);
-				} else {
-					if (curve.getType() == ECFm.ECFm)
-						msg = intToBitString(shareA.x == elements.length ? 0 : elements[shareA.x], 5) + " " //$NON-NLS-1$
-								+ intToBitString(shareA.y == elements.length ? 0 : elements[shareA.y], 5);
-					else
-						msg = intToBitString(shareA.x, 5) + " " + intToBitString(shareA.y, 5); //$NON-NLS-1$
-				}
-
-				for (int i = 0; i < 136; i++) {
-					// Hier wird der Verlauf der 1 und 0 bestimmt
-					if (i < 12) {
-						x += canvasExchangeWidth / (4 * 12);
-					} else if (i < 36) {
-						// Die -72 machen 18 Pixel aus, da 72/(4*12)=1,5*12=18
-						y += (canvasExchangeHeight) / (4 * 24);
-					} else if (i < 60) {
-						x += canvasExchangeWidth / (2 * 24);
-						y += (canvasExchangeHeight - 72) / (4 * 24);
-					} else if (i < 68) {
-						x += canvasExchangeWidth / (4 * 8);
-					} else if (i == 68) {
-						y = 10;
-						x = canvasExchangeWidth - 70;
-						if (large) {
-							msg = shareLargeB.getXAffin().toString(2).substring(0, 4) + " " //$NON-NLS-1$
-									+ shareLargeB.getYAffin().toString(2).substring(0, 4);
-						} else {
-							if (curve.getType() == ECFm.ECFm)
-								msg = intToBitString(shareB.x == elements.length ? 0 : elements[shareB.x], 5) + " " //$NON-NLS-1$
-										+ intToBitString(shareB.y == elements.length ? 0 : elements[shareB.y], 5);
-							else
-								msg = intToBitString(shareB.x, 5) + " " + intToBitString(shareB.y, 5); //$NON-NLS-1$
-						}
-					} else if (i < 80) {
-						x -= canvasExchangeWidth / (4 * 12);
-					} else if (i < 104) {
-						// Die -72 machen 18 Pixel aus, da 72/(4*12)=1,5*12=18
-						y += (canvasExchangeHeight) / (4 * 24);
-					} else if (i < 128) {
-						x -= canvasExchangeWidth / (2 * 24);
-						y += (canvasExchangeHeight - 72) / (4 * 24);
-					} else if (i < 136) {
-						x -= canvasExchangeWidth / (4 * 8);
-					}
-
-					Image im = new Image(canvasExchange.getDisplay(), original, SWT.IMAGE_COPY);
-					GC gcI = new GC(im);
-					gcI.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_BLACK));
-					gcI.setFont(FontService.getHeaderFont());
-					gcI.drawText(msg, x, y, true);
-					gc.drawImage(im, 0, (canvasExchange.getBounds().height / 2));
-
-					try {
-						sleep(50);
-					} catch (InterruptedException ex) {
-						LogUtil.logError(ECDHPlugin.PLUGIN_ID, ex);
-					}
-					gcI.dispose();
-				}
-				gc.dispose();
-				canvasExchange.redraw();
-			}
-		}
+	
+	private String[] buildAnimationMessages() {
+		String[] messages = new String[2]; 
+		// If large curve
+		if (large) {
+			messages[0] = shareLargeA.getXAffin().toString(2).substring(0, 4) + " " //$NON-NLS-1$
+					+ shareLargeA.getYAffin().toString(2).substring(0, 4);
+			messages[1] = shareLargeB.getXAffin().toString(2).substring(0, 4) + " " //$NON-NLS-1$
+					+ shareLargeB.getYAffin().toString(2).substring(0, 4);
+		// If small ECFm curve
+		} else if (curve.getType() == ECFm.ECFm) {
+				messages[0] = intToBitString(shareA.x == elements.length ? 0 : elements[shareA.x], 5) + " " //$NON-NLS-1$
+						+ intToBitString(shareA.y == elements.length ? 0 : elements[shareA.y], 5);
+				messages[1] = intToBitString(shareB.x == elements.length ? 0 : elements[shareB.x], 5) + " " //$NON-NLS-1$
+						+ intToBitString(shareB.y == elements.length ? 0 : elements[shareB.y], 5);
+		// If small normal curve
+		} else {
+				messages[0] = intToBitString(shareA.x, 5) + " " + intToBitString(shareA.y, 5); //$NON-NLS-1$
+				messages[1] = intToBitString(shareB.x, 5) + " " + intToBitString(shareB.y, 5); //$NON-NLS-1$
+		}				
+		return messages;
 	}
+
 }
