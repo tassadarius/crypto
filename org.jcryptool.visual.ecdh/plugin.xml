@@ -48,7 +48,7 @@
    <extension
          point="org.eclipse.ui.menus">
       <menuContribution
-            locationURI="toolbar:org.jcryptool.visual.ecdh.ui.view">
+            locationURI="toolbar:org.jcryptool.visual.ECDH.view">
          <command
                commandId="org.jcryptool.visual.ecdh.restartCommand"
                icon="platform:/plugin/org.eclipse.ui/icons/full/etool16/new_wiz.png"
