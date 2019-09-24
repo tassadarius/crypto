@@ -12,16 +12,9 @@ package org.jcryptool.visual.ECDH.ui.view;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import org.eclipse.core.commands.AbstractHandler;
-import org.eclipse.core.commands.Command;
-import org.eclipse.core.commands.CommandManager;
-import org.eclipse.core.commands.ExecutionEvent;
+import java.io.IOException;
+
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
@@ -49,11 +42,6 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.commands.ICommandService;
-import org.eclipse.ui.menus.CommandContributionItem;
-import org.eclipse.ui.menus.CommandContributionItemParameter;
-import org.eclipse.ui.services.IServiceLocator;
 import org.jcryptool.core.logging.utils.LogUtil;
 import org.jcryptool.core.operations.util.PathEditorInput;
 import org.jcryptool.core.util.constants.IConstants;
@@ -87,7 +75,9 @@ public class ECDHComposite extends Composite {
 	private Button btnSecretB = null;
 	private Button btnCalculateSharedB = null;
 	private Button btnCalculateKeyB = null;
-	private Button btn_showAnimation;
+	private Button btnSaveToFile;
+	private Button btnSaveToEditor;
+	private Button btnShowAnimation;
 	private Canvas canvasBtn = null;
 	private Canvas canvasExchange = null;
 	private Canvas canvasKey = null;
@@ -98,7 +88,6 @@ public class ECDHComposite extends Composite {
 	private Group groupBob = null;
 	private Group groupMain = null;
 	private Group groupParameters = null;
-	private Group settings;
 	private Label placeholder;
 	private Text infoText;
 	private Text textCurve = null;
@@ -126,23 +115,18 @@ public class ECDHComposite extends Composite {
 	private ECPoint generator;
 	private int valueN;
 	private ECDHView view;
-	private File logFile;
+	private File outputFile;
 	private boolean large;
 	private EllipticCurve largeCurve;
 	private Point pointG;
 	private FlexiBigInt largeOrder;
 	private boolean showAnimation = true;
-	private final String saveToEditorCommandId = "org.jcryptool.visual.ecdh.commands.saveToEditor"; //$NON-NLS-1$
-	private AbstractHandler saveToEditorHandler;
-	private final String saveToFileCommandId = "org.jcryptool.visual.ecdh.commands.saveToFile"; //$NON-NLS-1$
-	private AbstractHandler saveToFileHandler;
-	private IServiceLocator serviceLocator;
 	private boolean chooseSecretButtonResets;
 	private Image id;
 
-	private static final int RESET_ALL = 0;
-	private static final int RESET_PUBLIC_PARAMETERS = 1;
-	private static final int RESET_SECRET_PARAMETERS = 2;
+	public static final int RESET_ALL = 0;
+	public static final int RESET_PUBLIC_PARAMETERS = 1;
+	public static final int RESET_SECRET_PARAMETERS = 2;
 
 	public ECDHComposite(Composite parent, int style, ECDHView view) {
 		super(parent, style);
@@ -150,77 +134,6 @@ public class ECDHComposite extends Composite {
 		setLayout(new GridLayout());
 		createCompositeIntro();
 		createGroupMain();
-		// createInfoGroup();
-
-		serviceLocator = PlatformUI.getWorkbench();
-		IMenuManager dropDownMenu = view.getViewSite().getActionBars().getMenuManager();
-		final String showAnimationCommandId = "org.jcryptool.visual.ecdh.commands.showAnimation"; //$NON-NLS-1$
-		AbstractHandler showAnimationHandler = new AbstractHandler() {
-			public Object execute(ExecutionEvent event) {
-				toggleAnimation();
-				return null;
-			}
-		};
-		defineCommand(showAnimationCommandId, Messages.getString("ECDHComposite.0"), showAnimationHandler); //$NON-NLS-1$
-		addContributionItem(dropDownMenu, showAnimationCommandId, null, null, SWT.CHECK);
-		dropDownMenu.add(new Separator());
-		saveToEditorHandler = new AbstractHandler() {
-			public Object execute(ExecutionEvent event) {
-				saveToEditor();
-				return null;
-			}
-		};
-		defineCommand(saveToEditorCommandId, Messages.getString("ECDHComposite.2"), null); // don't enable the //$NON-NLS-1$
-																							// command
-																							// until we have results to
-																							// save
-		addContributionItem(dropDownMenu, saveToEditorCommandId, null, null, SWT.PUSH);
-		saveToFileHandler = new AbstractHandler() {
-			public Object execute(ExecutionEvent event) {
-				saveToFile();
-				return null;
-			}
-		};
-		defineCommand(saveToFileCommandId, Messages.getString("ECDHComposite.3"), null); // don't enable the command //$NON-NLS-1$
-																							// until we have results to
-																							// save
-		addContributionItem(dropDownMenu, saveToFileCommandId, null, null, SWT.PUSH);
-
-		IToolBarManager toolBarMenu = view.getViewSite().getActionBars().getToolBarManager();
-		final String resetCommandId = "org.jcryptool.visual.ecdh.commands.reset"; //$NON-NLS-1$
-		AbstractHandler resetHandler = new AbstractHandler() {
-			public Object execute(ExecutionEvent event) {
-				reset(RESET_ALL);
-				return null;
-			}
-		};
-		defineCommand(resetCommandId, Messages.getString("ECDHComposite.4"), resetHandler); // $NON_NLS-1$ //$NON-NLS-1$
-		addContributionItem(toolBarMenu, resetCommandId, ECDHPlugin.getImageDescriptor("icons/reset.gif"), null, //$NON-NLS-1$
-				SWT.PUSH);
-	}
-
-	private void createInfoGroup() {
-		settings = new Group(this, SWT.NONE);
-		settings.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
-		settings.setLayout(new GridLayout());
-		settings.setText(Messages.getString("ECDHComposite.settingsGroupTitle")); //$NON-NLS-1$
-
-		btn_showAnimation = new Button(settings, SWT.CHECK);
-		btn_showAnimation.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-		btn_showAnimation.setSelection(showAnimation);
-		btn_showAnimation.setText(Messages.getString("ECDHComposite.6")); //$NON-NLS-1$
-		btn_showAnimation.addSelectionListener(new SelectionListener() {
-
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				showAnimation = showAnimation ? false : true;
-			}
-
-			@Override
-			public void widgetDefaultSelected(SelectionEvent e) {
-				widgetSelected(e);
-			}
-		});
 	}
 
 	private void createCanvasBtn(Group parent) {
@@ -413,24 +326,6 @@ public class ECDHComposite extends Composite {
 
 	}
 
-	private void defineCommand(final String commandId, final String name, AbstractHandler handler) {
-		ICommandService commandService = (ICommandService) serviceLocator.getService(ICommandService.class);
-		Command command = commandService.getCommand(commandId);
-		command.define(name, null, commandService.getCategory(CommandManager.AUTOGENERATED_CATEGORY_ID));
-		command.setHandler(handler);
-	}
-
-	private void addContributionItem(IContributionManager manager, final String commandId, final ImageDescriptor icon,
-			final String tooltip, int Style) {
-		CommandContributionItemParameter param = new CommandContributionItemParameter(serviceLocator, null, commandId, Style);
-		if (icon != null)
-			param.icon = icon;
-		if (tooltip != null && !tooltip.equals("")) //$NON-NLS-1$
-			param.tooltip = tooltip;
-		CommandContributionItem item = new CommandContributionItem(param);
-		manager.add(item);
-	}
-
 	@Override
 	public void dispose() {
 		id.dispose();
@@ -445,20 +340,70 @@ public class ECDHComposite extends Composite {
 	 */
 	private void createCompositeIntro() {
 		Composite compositeIntro = new Composite(this, SWT.NONE);
-		compositeIntro.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
+		//compositeIntro.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
 		compositeIntro.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		compositeIntro.setLayout(new GridLayout(1, false));
+		compositeIntro.setLayout(new GridLayout(6, true));
 
-		Label label = new Label(compositeIntro, SWT.NONE);
-		label.setFont(FontService.getHeaderFont());
-		label.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
-		label.setText(Messages.getString("ECDHView.title")); //$NON-NLS-1$
+		Label title = new Label(compositeIntro, SWT.NONE);
+		title.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 4, 1));
+		title.setFont(FontService.getHeaderFont());
+		//title.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
+		title.setText(Messages.getString("ECDHView.title")); //$NON-NLS-1$
 
 		StyledText stDescription = new StyledText(compositeIntro, SWT.READ_ONLY | SWT.WRAP);
 		stDescription.setText(Messages.getString("ECDHView.description")); //$NON-NLS-1$
-		GridData gd_stDescription = new GridData(SWT.FILL, SWT.FILL, false, false); // TODO Plugin Description
-		gd_stDescription.widthHint = label.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
+		GridData gd_stDescription = new GridData(SWT.FILL, SWT.FILL, false, false, 4 ,2); // TODO Plugin Description
 		stDescription.setLayoutData(gd_stDescription);
+		
+		btnShowAnimation = new Button(compositeIntro, SWT.CHECK);
+		btnShowAnimation.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, true, 1, 2));
+		btnShowAnimation.setSelection(showAnimation);
+		btnShowAnimation.setText(Messages.getString("ECDHComposite.6")); //$NON-NLS-1$
+		btnShowAnimation.addSelectionListener(new SelectionListener() {
+
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				showAnimation = showAnimation ? false : true;
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				widgetSelected(e);
+			}
+		});
+		
+		btnSaveToFile = new Button(compositeIntro, SWT.PUSH);
+		btnSaveToFile.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, true, 1, 1));
+		btnSaveToFile.setText("Speichern Datei"); //$NON-NLS-1$
+		btnSaveToEditor= new Button(compositeIntro, SWT.PUSH);
+		btnSaveToEditor.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, true, 1, 1));
+		btnSaveToEditor.setText("Speichern Editor"); //$NON-NLS-1$
+		
+		btnSaveToFile.setVisible(false);
+		btnSaveToEditor.setVisible(false);	
+		
+		btnSaveToFile.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				saveToFile();
+			}
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+			}
+		});
+		btnSaveToEditor.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				saveToEditor();
+			}
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+			}
+		});
 	}
 
 
@@ -743,11 +688,6 @@ public class ECDHComposite extends Composite {
 				else
 					b = keyA != null && keyB != null;
 				if (b) {
-					ICommandService commandService = (ICommandService) serviceLocator.getService(ICommandService.class);
-					Command command = commandService.getCommand(saveToEditorCommandId);
-					command.setHandler(saveToEditorHandler);
-					command = commandService.getCommand(saveToFileCommandId);
-					command.setHandler(saveToFileHandler);
 					if (large)
 						b = keyLargeA.getXAffin().equals(keyLargeB.getXAffin());
 					else
@@ -881,11 +821,6 @@ public class ECDHComposite extends Composite {
 				else
 					b = keyA != null && keyB != null;
 				if (b) {
-					ICommandService commandService = (ICommandService) serviceLocator.getService(ICommandService.class);
-					Command command = commandService.getCommand(saveToEditorCommandId);
-					command.setHandler(saveToEditorHandler);
-					command = commandService.getCommand(saveToFileCommandId);
-					command.setHandler(saveToFileHandler);
 					if (large)
 						b = keyLargeA.getXAffin().equals(keyLargeB.getXAffin());
 					else
@@ -973,13 +908,18 @@ public class ECDHComposite extends Composite {
 	}
 
 	private void saveToEditor(String s) {
-		if (logFile == null) {
-			logFile = new File(DirectoryService.getTempDir() + "ECDH results.txt"); //$NON-NLS-1$ //$NON-NLS-2$
-			logFile.deleteOnExit();
+		if (outputFile == null) {
+			outputFile = new File(DirectoryService.getTempDir() + "ECDH results.txt"); //$NON-NLS-1$ //$NON-NLS-2$
+			outputFile.deleteOnExit();
 		}
 
-		saveToFile(s);
-
+		try {
+			writeFile(s, outputFile);
+		}
+		catch (IOException e) {
+				handleSaveException(e);
+		}
+		
 		IWorkbenchPage editorPage = view.getSite().getPage();
 
 		IEditorReference[] er = editorPage.getEditorReferences();
@@ -990,38 +930,46 @@ public class ECDHComposite extends Composite {
 		}
 
 		try {
-			IPath location = new org.eclipse.core.runtime.Path(logFile.getAbsolutePath());
+			IPath location = new org.eclipse.core.runtime.Path(outputFile.getAbsolutePath());
 			editorPage.openEditor(new PathEditorInput(location), "org.jcryptool.editor.text.editor.JCTTextEditor"); //$NON-NLS-1$
 		} catch (PartInitException e) {
 			LogUtil.logError(ECDHPlugin.PLUGIN_ID, e);
 		}
 	}
+	
+	private void handleSaveException(IOException e) {
+		MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell());
+		messageBox.setText(Messages.getString("ECDHComposite.160")); //$NON-NLS-1$
+		messageBox.setMessage(Messages.getString("ECDHComposite.161") + e.getMessage()); //$NON-NLS-1$
+		messageBox.open();
+	}
 
 	private void saveToFile(String s) {
 		selectFileLocation();
-		if (logFile != null) {
+		if (outputFile != null) {
 			try {
-				String[] sa = s.split("\n"); //$NON-NLS-1$
-				if (sa.length > 1 || !sa[0].equals("")) { //$NON-NLS-1$
-					if (!logFile.exists())
-						logFile.createNewFile();
-					FileWriter fw = new FileWriter(logFile, true);
-					BufferedWriter bw = new BufferedWriter(fw);
-					for (int i = 0; i < sa.length; i++) {
-						if (i < sa.length - 1 || (i == sa.length - 1 && !sa[i].equals(""))) { //$NON-NLS-1$
-							bw.write(sa[i]);
-							bw.newLine();
-						}
-					}
-					bw.close();
-					fw.close();
-				}
-			} catch (Exception e) {
-				MessageBox messageBox = new MessageBox(Display.getCurrent().getActiveShell());
-				messageBox.setText(Messages.getString("ECDHComposite.160")); //$NON-NLS-1$
-				messageBox.setMessage(Messages.getString("ECDHComposite.161") + e.getMessage()); //$NON-NLS-1$
-				messageBox.open();
+				writeFile(s, outputFile);
+			} catch (IOException e) {
+				handleSaveException(e);
 			}
+		}
+	}
+	
+	private void writeFile(String s, File file) throws IOException {
+		String[] sa = s.split("\n"); //$NON-NLS-1$
+		if (sa.length > 1 || !sa[0].equals("")) { //$NON-NLS-1$
+			if (!outputFile.exists())
+				outputFile.createNewFile();
+			FileWriter fw = new FileWriter(outputFile, true);
+			BufferedWriter bw = new BufferedWriter(fw);
+			for (int i = 0; i < sa.length; i++) {
+				if (i < sa.length - 1 || (i == sa.length - 1 && !sa[i].equals(""))) { //$NON-NLS-1$
+					bw.write(sa[i]);
+					bw.newLine();
+				}
+			}
+			bw.close();
+			fw.close();
 		}
 	}
 
@@ -1034,10 +982,10 @@ public class ECDHComposite extends Composite {
 		dialog.setOverwrite(true);
 		String filename = dialog.open();
 		if (filename == null) {
-			logFile = null;
+			outputFile = null;
 			return;
 		} else
-			logFile = new File(filename);
+			outputFile = new File(filename);
 	}
 
 	/**
@@ -1052,7 +1000,7 @@ public class ECDHComposite extends Composite {
 	 * </ul>
 	 * @param state to reset to
 	 */
-	private void reset(int state) {
+	public void reset(int state) {
 		switch (state) {
 		case RESET_ALL: // complete reset
 			curve = null;
@@ -1119,11 +1067,8 @@ public class ECDHComposite extends Composite {
 			btnCalculateKeyB.setEnabled(false);
 			btnCalculateKeyB.setBackground(cRed);
 			textCommonKeyB.setText(""); //$NON-NLS-1$
-			ICommandService commandService = (ICommandService) serviceLocator.getService(ICommandService.class);
-			Command command = commandService.getCommand(saveToEditorCommandId);
-			command.setHandler(null);
-			command = commandService.getCommand(saveToFileCommandId);
-			command.setHandler(null);
+			btnSaveToFile.setVisible(false);
+			btnSaveToEditor.setVisible(false);
 		}
 		groupMain.redraw();
 	}
@@ -1223,6 +1168,8 @@ public class ECDHComposite extends Composite {
 						 Messages.getString("ECDHView.Step4") +
 						 Messages.getString("ECDHView.Step5") +
 						 Messages.getString("ECDHView.messageSucces"));
+		btnSaveToFile.setVisible(true);
+		btnSaveToEditor.setVisible(true);
 	}
 	
 	/**
