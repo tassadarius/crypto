@@ -1,116 +1,219 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-  "http://www.w3.org/TR/html4/loose.dtd">
-<html xml:lang="de" >
+<!DOCTYPE html>
+<html lang="de">
 <head>
-    <link rel="stylesheet" type="text/css" href="sssAlgorithm.css">
-    <title>Shamirs Secret Sharing Algorithmus</title>
-  <script id="MathJax-script" async src="${JCTJS_HOST}/javascript/MathJax-master/es5/tex-mml-svg.js"></script>
+<link rel="stylesheet" type="text/css" href="sssAlgorithm.css">
+<title>Shamirs Secret Sharing Algorithmus</title>
+<script id="MathJax-script" async src="${JCTJS_HOST}/javascript/MathJax-master/es5/tex-mml-svg.js"></script>
 </head>
 <body>
-   <h1>Shamirs Secret Sharing-Algorithmus</h1>
+  <h1>Shamirs Secret Sharing-Algorithmus</h1>
 
-<p>Shamir's Secret Sharing-Algorithmus ist ein von Adi Shamir 1979
-entwickeltes Secret-Sharing-Verfahren, mit dem es möglich ist, Shares eines Geheimnisses auf mehrere Personen aufzuteilen, wobei nur eine Untermenge dieser Personen erforderlich ist, um das Geheimnis wieder zu rekonstruieren. Sie können das mit einem Safe vergleichen, wo 3 von 5 verschiedenen Schlüsseln reichen, um ihn zu öffnen.</p>
+  <p>Shamir's Secret Sharing-Algorithmus ist ein von Adi Shamir 1979 entwickeltes
+    Secret-Sharing-Verfahren, mit dem es möglich ist, Shares eines Geheimnisses auf mehrere Personen
+    aufzuteilen, wobei nur eine Untermenge dieser Personen erforderlich ist, um das Geheimnis wieder zu
+    rekonstruieren. Sie können das mit einem Safe vergleichen, wo 3 von 5 verschiedenen Schlüsseln reichen, um
+    ihn zu öffnen.</p>
 
-<p> Seien \(n\) und \(t\) natürliche Zahlen mit \(t \leq n\). In einem \((n,t)\)-Secret-Sharing-Protokoll wird das
-Geheimnis auf \(n\) Personen aufgeteilt. Jede Person hat einen Share des Geheimnisses.
-Wenn sich \(t\) dieser Personen zusammentun, können sie das Geheimnis rekonstruieren.
-Wenn sich aber weniger als \(t\) dieser Teilgeheimnisträger zusammentun, können sie
-keine relevanten Informationen über das Geheimnis erhalten. Dieses Prinzip ist deutlich besser als eine Schatzkarte zu zerschneiden und die Teile an mehrere Personen zu verteilen.
-</p>
+  <p>Seien \(n\) und \(t\) natürliche Zahlen mit \(t \leq n\). In einem \((n,t)\)-Secret-Sharing-Protokoll
+    wird das Geheimnis auf \(n\) Personen aufgeteilt. Jede Person hat einen Teil (Share) des Geheimnisses.
+    Wenn sich \(t\) dieser Personen zusammentun, können sie das Geheimnis rekonstruieren. Wenn sich aber
+    weniger als \(t\) dieser Teilgeheimnisträger zusammentun, können sie keine relevanten Informationen über
+    das Geheimnis erhalten. Dieses Prinzip ist deutlich besser als eine Schatzkarte zu zerschneiden und die
+    Teile an mehrere Personen zu verteilen.</p>
 
-<p>Der Algorithmus von Shamir nutzt die Lagrange-Polynominterpolation, um aus den Shares das Polynom zu rekonstruieren. Alle Berechnungen werden im Ganzzahlkörper
-\(\mathbb {Z} /p\mathbb {Z}\) durchgeführt.
-</p>
+  <p>Der Algorithmus von Shamir nutzt die Lagrange-Polynominterpolation, um aus den Shares das Polynom zu
+    rekonstruieren. Alle Berechnungen werden im ganzzahligen Restklassenkörper \(\mathbb {Z} /p\mathbb {Z}\)
+    durchgeführt, also über ganze Zahlen modulo einer Primzahl.</p>
 
-<p>Sei der Dealer derjenige, der ein Geheimnis \(s \in \mathbb {Z} /p\mathbb {Z}\)
-verteilen will.</p>
+  <p>Sei der Dealer derjenige, der ein Geheimnis \(s \in \mathbb {Z} /p\mathbb {Z}\) verteilen will.</p>
 
-<ol >
-  <li> Er wählt geheime Elemente \(a_j \in \mathbb {Z} /p\mathbb {Z}\), wobei für alle
-  \(j\) gilt \(1 \leq j \leq (t - 1)\) und konstruiert daraus das Polynom
-  <p style="margin-left: 20pt">  \( \begin{align} P(x) = s + \sum{a_jx^j} \end{align} \) </p>
-  Das Polynom ist vom Grad \(\leq t - 1\).</li>
-  <li>Der Dealer berechnet die sogenannten Shares \(y_i = P(x_i)\), wobei für alle \(i\) gilt
-  \(1 \leq i \leq n\).</li>
-  <li>Der Dealer gibt dem \(i\)-ten Shareholder den jeweiligen Share \(y_i\) des Polynoms. Das
-  Geheimnis ist der konstante Term \(a_0\) des Polynoms \(P(x)\).</li>
-</ol>
+  <ol>
+    <li>Er wählt ein \(t\) und \(j\) geheime Elemente \(a_j \in \mathbb {Z} /p\mathbb {Z}\), wobei für
+      alle \(j\) gilt \(1 \leq j \leq (t - 1)\) und konstruiert daraus das Polynom
+      <p style="margin-left: 20pt">\( \begin{align} P(x) = s + \sum{a_jx^j} \end{align} \)</p> Das Polynom ist
+      vom Grad \(\leq t - 1\).
+    </li>
+    <li>Der Dealer berechnet ganzzahlige Punkte auf dem Polynom, die sogenannten Shares. Diese sind
+      einfach Punkte des Polynoms aufsteigend von 1 bis \(n\). (mathematisch ausgedrückt \(y_i = P(x_i)\),
+      wobei für alle \(i\) gilt \(1 \leq i \leq n\)).</li>
+    <li>Der Dealer gibt dem \(i\)-ten Shareholder die jeweilige Koordinate \((x_i, \; y_i)\) des
+      Polynoms. Das Geheimnis \(s\) ist der konstante Term \(a_0\) des Polynoms.</li>
+  </ol>
 
-<p>Um das Geheimnis rekonstruieren zu können, nehmen wir an, dass \(t\) Shareholder
-zusammenarbeiten. Ihre Shares seien \(y_i = P(x_i)\) wobei für alle \(i\) gilt \(1 \leq i \leq t\).
-Dabei ist \(P(x)\) das Polynom aus Schritt 1. Es gilt</p>
+  <p>Um das Geheimnis rekonstruieren zu können, benötigen wir das Lagrange-Verfahren zur Interpolation von
+    Punkten. Die Shareholder besitzen jeweils Punkte des originalen Polynoms, die sie benutzen können um das
+    gesuchte Geheimnis dadurch zu berechnen</p>
 
-<p style="margin-left: 20pt"> \( \begin{align} 
-  w_i = y_i \cdot \prod \frac{x_j - x}{x_j - x_i} \mod p \; \text{wobei für alle} \; j \;
-  \text{gilt} \; 1 \leq j \leq t,\; j \neq i \end{align} \)</p>
+  <h3>Lagrange-Polynominterpolation</h3>
 
-<p>und</p>
+  <p>Ziel ist es, zu gegebenen Punkten in einem Koordintensystem ein Polynom zu finden, das alle Punkte
+    beinhaltet und eine Annäherung zwischen diesen Punkten ermöglicht (die originale Funktion der Punkte ist
+    unbekannt).</p>
 
-<p style="margin-left: 20pt"> \( \begin{align} 
-  P(x) = \sum{w_i} \mod p \; \text{wobei für alle} \; i \; \text{gilt} \; 1 \leq i \leq t
+  <p>Wir stellen dazu für jeden Punkt \(i\) ein sogenanntes Lagrange-Polynom \(L_i\) auf. Dieses ist genau
+    1, für die Koordinate dieses Punktes. In dieses Polynom fließen auch alle anderen bekannten Punkte \(x_j\)
+    als Stützstellen für die Interpolation ein. \(t\) ist in diesem Fall die Anzahl der bekannten Punkte.</p>
+
+  <p style="margin-left: 20pt">\( \begin{align} L_i(x) = \prod\limits_{j \neq i}\frac{x - x_j}{x_j - x_i},
+    \quad \; i = 1, ..., t \end{align} \)</p>
+
+  <p>Das wirkt auf den ersten Blick etwas kompliziert. Die Ausnahme, dass für die \(i\)-te Stützstelle der
+    Term für den selben Punkt \(x_j\) fehlt, folgt aus dem einfachen Grund, dass sonst durch null dividiert
+    werden würde: wenn \(x_i = x_j\) dann gilt \(\frac{x - x_i}{x_j - x_i} = \frac{x - x_i}{0}\).
+  <p>Wenn wir das Produkt expandieren und uns genauer ansehen, was passiert wenn welche x-Koordinate
+    eingesetzt wird, sollte uns das etwas klarer werden. Wir gehen von 3 Punkten aus, das bedeutet wir
+    benötigen 3 Lagrange-Polynome \(L_i\):</p>
+
+  <p style="margin-left: 20pt">\( \begin{align}
+    L_1(x) = \frac{x - x_2}{x_2 - x_1} \cdot \frac{x - x_3}{x_3 - x_1}\\
+    L_2(x) = \frac{x - x_1}{x_1 - x_2} \cdot \frac{x - x_3}{x_3 - x_2}\\
+    L_3(x) = \frac{x - x_1}{x_1 - x_3} \cdot \frac{x - x_2}{x_2 - x_3}
   \end{align} \)</p>
 
-<p>Zusammengefasst in einer Formel</p>
+  <p>Der y-Wert eines zu interpolierenden Punktes an der Stelle \(x\) (das ist eine Variable, nicht zu
+    verwechseln mit den fixen Punkten \(x_i\) und \(x_j\)) kann nun angenähert werden durch:</p>
 
-<p style="margin-left: 20pt"> \( \begin{align}
-  P(x) = \sum y_i \prod \frac{x_j - x}{x_j - x_i} \mod \quad \text{wobei für alle} \;
- i \; \text{und} \; j \; \text{gilt} \; 1 \leq i,j \leq t, j \neq i \end{align} \)</p>
+  <p style="margin-left: 20pt">\( \begin{align}
+    P'(x) = L_1(x) \cdot y_1 + L_2(x) \cdot y_2 + L_3(x) \cdot y_3
+  \end{align} \)</p>
 
-<p> Da der Koeffizient \(a_0\) das Geheimnis ist, berechnen wir </p>
+  <p>Eine Anforderung zu Beginn war, dass die Lagrange-Interpolation die vorhandenen Punkte original
+    wiedergibt. Wenn wir also probieren z.B. \(x_2\) einzusetzen, passiert folgendes:</p>
 
-<p style="margin-left: 20pt"> \( \begin{align}
-  s = a_0 = \sum y_i \prod \frac{x_j}{x_j - x_i} \quad \text{wobei für alle} \;
-  i \; \text{und} \; j \; \text{gilt} \; 1 \leq i,j \leq t, j \neq i \end{align} \)</p>
- 
-<p>Diese Formel wird von den Shareholdern benutzt, um das Geheimnis zu rekonstruieren. 
-Wir wollen dies an einem Beispiel zeigen.</p>
+  <p style="margin-left: 20pt">\( \begin{align}
+    P'(x_2) &= L_1(x_2) \cdot y_1 + L_2(x_2) \cdot y_2 + L_3(x_2) \cdot y_3 = \\[10pt]
+    P'(x_2) &= \frac{x_2 - x_2}{x_2 - x_1} \cdot \frac{x_3 - x_1}{x_3 - x_1} \cdot y_1 +
+    \frac{x_2 - x_1}{x_2 - x_1} \cdot \frac{x_2 - x_3}{x_3 - x_1} \cdot y_2 + \frac{x_2 - x_1}
+    {x_2 - x_1} \cdot \frac{x_2 - x_2}{x_3 - x_1} \cdot y_3 =\\[10pt]
+    P'(x_2) &= \frac{0}{x_2 - x_1} \cdot \frac{x_3 - x_1}{x_3 - x_1} \cdot y_1 + \frac{x_2 - x_1}
+    {x_2 - x_1} \cdot \frac{x_2 - x_3}{x_3 - x_1} \cdot y_2 + \frac{x_2 - x_1}{x_2 - x_1} \cdot
+    \frac{0}{x_3 - x_1} \cdot y_3 =\\[10pt]
+    P'(x_2) &= 0 \cdot y_1 + 1 \cdot y_2 + 0 \cdot y_3 = y_2
+  \end{align} \)</p>
 
-<h2>Beispiel</h2>
+  <p>Für alle Punkte \(i\) ergibt sich an deren Stützstelle \(L_i = 1\) während alle anderen 0 werden.
+    Falls ein unbekannter Punkt für x eingesetzt wird, erhält man einen interpolierten Wert.</p>
 
-<p>Sei \(n = 5\), \(t = 3\). Der Dealer wählt \(p = 17\), \(x_i = i\) wobei für alle \(i\) gilt
-\(1 \leq i \leq 5\). Das Geheimnis ist \(s = 5\).
-Der Dealer wählt die geheimen Koeffizienten \(a_1 = 7\) und \(a_2 = 11\). Damit erhalten wir das
-Polynom</p>
+  <h2>Rekonstruktion des Geheimnisses mithilfe der Lagrange-Polynominterpolation</h2>
 
-<p style="margin-left: 20pt"> \( \begin{align} 
+  <p>Wir wenden nun das Lagrange-Interpolationsverfahren an, um das Geheimnis zu rekonstruieren. Wir
+    erinnern uns, dass das Geheimnis der erste Koeffizient \(a_0\) des nicht bekannten (geheimen) Polynoms
+    ist:</p>
+
+  <p style="margin-left: 20pt">\( \begin{align}
+    P(x) = a_0 + a_1 x + a_2 x^2 + ... + a_i x^i
+  \end{align} \)</p>
+
+  <p>Die Frage ist nun, wie mithilfe der Interpolation, das Geheimnis berechnet werden kann. Wir können
+    sehen, dass der Koeffizient \(a_0\) der einzige ist, der nicht mit \(x\) multipliziert wird. Das bedeutet,
+    dass bei \(x = 0\) alle anderen Teile des Polynoms einfach wegfallen, da sie 0 werden. Übrig bleibt das
+    Geheimnis.</p>
+
+  <p style="margin-left: 20pt">\( \begin{align}
+    P(0) &= a_0 + a_1 \cdot 0 + a_2 \cdot 0^2 + ... + a_i \cdot 0 ^ i\\
+    P(0) &= a_0 = s
+  \end{align} \)</p>
+
+  <p>Wir wenden dies nun an, um aus den Shares (Punkten des Polynoms) das Geheimnis zu berechnen. Die
+    Lagrange-Polynome werden ähnlich wie bei der normalen Polynominterpolation berechnet. Wir müssen aber
+    aufpassen, da wir uns in einem Modulo-Restklassensystem befinden, dürfen wir nicht einfach dividieren
+    sondern müssen das Modulo-Inverse mithilfe des erweiterten euklidischen Algorithmus berechnen.</p>
+
+  <p style="margin-left: 20pt">\( \begin{align}
+    L_i = y_i \cdot \prod\limits_{j \neq i} (x_j - x) \cdot (x_j - x_i)^{-1} \mod p, \quad i = 1, ..., t
+  \end{align} \)</p>
+
+  <p>Da wir ausschließlich \(x = 0\) einsetzen werden, lässt sich der Term \((x_j - x) \cdot (x_j -
+    x_i)^{-1}\) zu \(x_j \cdot (x_j - x_i)^{-1}\) vereinfachen.</p>
+
+  <p>Danach kann das Geheimnis spezifisch am x-Wert 0 berechnet werden:</p>
+
+  <p style="margin-left: 20pt">\( \begin{align}
+    a_0 = s = P'(0) = \sum L_i(0) \cdot y_i
+  \end{align} \)</p>
+
+  <h2>Beispiel</h2>
+
+  <p>Sei \(n = 4\), \(t = 3\). Der Dealer wählt \(p = 17\), \(x_i = i\) wobei für alle \(i\) gilt \(1 \leq
+    i \leq 5\). Das Geheimnis ist \(s = 5\). Der Dealer wählt die geheimen Koeffizienten \(a_1 = 7\) und \(a_2
+    = 11\). Damit erhalten wir das Polynom</p>
+
+  <p style="margin-left: 20pt">\( \begin{align}
     P(x) = 5 + 7x + 11x^2 \mod 17
   \end{align} \)</p>
 
-<p> Mit \(5\) zufälligen Werten für \(x\) ergeben sich die Shares \(y_1 = P(1) = 6\),
-\(y_2 = P(2) = 12\), \(y_3 = P(3) = 6\), \(y_4 = P(4) = 5\), \(y_5 = P(5) = 9\);
-Diese werden an die Shareholder verteilt. Die Shareholder 1, 2 und 3 kommen nun zusammen, um das
-Geheimnis zu rekonstruieren. Das Lagrange-Polynom wird berechnet und mit den Shares \(y_i\) gewichtet (multipliziert):</p>
+  <p>Mit den Werten \(x = 1, ..., 4\) ergeben sich die Shares \(y_1 = P(1) = 6\), \(y_2 = P(2) = 12\),
+    \(y_3 = P(3) = 6\), \(y_4 = P(4) = 5\). Diese werden an die Shareholder verteilt.</p>
 
-<p style="margin-left: 20pt"> \( \begin{align} 
-w_i = y_i \prod \frac{x_j}{x_j - x_i} \quad \text{wobei für alle} \;
- i, j \; \text{gilt} \; 1 \leq i,j \leq 3, j \neq i \end{align} \)</p>
+  <figure style="width: 65%; min-width: 250px; max-width: 1000px; margin-bottom: 30pt">
+    <img src="sssAlgorithm_fig1-example-plotted.svg"
+      alt="Diagramm des Beispielpolynoms. Das Geheimnis an Punkt 0, die Shares und andere
+  Punkte des Polynoms sind eingezeichnet.">
+    <figcaption>Abbildung 1: Visuelle Darstellung des Polynoms - es zeigt das Geheimnis an der
+      Stelle \(x = 0\), die Shares und weitere, nicht relevante Punkte des Polynoms. Man beachte, dass die
+      kontinuierliche blaue Linie nur als gedankliche und visuelle Stütze gedacht ist. Der Algorithmus selbst
+      arbeitet mit ganzen Zahlen (präziser im Restklassenkörper \(\mathbb {Z} /p\mathbb {Z}\)) die als Punkte
+      eingezeichnet sind.</figcaption>
+  </figure>
+  <p>Die Shareholder 1, 2 und 3 kommen nun zusammen, um das Geheimnis zu rekonstruieren. Zuerst werden die
+    Lagrange-Polynome berechnet:</p>
 
-<p>Es ergibt sich für für die jeweiligen Shareholder:</p>
+  <p style="margin-left: 20pt">\( \begin{align}
+    L_i(x) = \prod\limits_{j \neq i} x \cdot (x_j - x_i)^{-1}, \quad i = 1, ..., t
+  \end{align} \)</p>
 
-<p style="margin-left: 20pt"> \( \begin{alignat}{4}
-    w_1 &&= 4 +&& 9x +&& 6x^2 &&= 3\\
-    w_2 &&= 3 +&& 2x +&& 11x^2 &&= 7\\
-    w_3 &&= 15 +&& 13x +&& 11x^2 &&= 13\\
-  \end{alignat}
- \)
+  <p style="margin-left: 20pt">\( \begin{alignat}{11}
+    L_1(0) &&= 2 \cdot (2 - 1)^{-1} \cdot 3 \cdot (3 - 1)^{-1} =&& (2 \cdot 1) &\cdot (3 \cdot 9)
+      &&=& \, 3 \;\; &(\text{mod} \; p)\\
+    L_2(0) &&= 1 \cdot (1 - 2)^{-1} \cdot 3 \cdot (3 - 2)^{-1} =&& \ (1 \cdot 16) &\cdot (3 \cdot 1)
+      &&=& \, 14 \;\; &(\text{mod} \; p)\\
+    L_3(0) &&= 1 \cdot (1 - 3)^{-1} \cdot 2 \cdot (2 - 3)^{-1} =&& (1 \cdot 8) &\cdot (2 \cdot 16)
+      &&=& \, 1 \;\; &(\text{mod} \; p)
+  \end{alignat} \)</p>
 
+  <p style="margin-left: 20pt">\( \begin{alignat}{2}
+    L_1(0) =&& 3 \\ L_2(0) =&& \, 14 \\ L_3(0) =&& 1
+  \end{alignat} \)</p>
 
-<p>
-Nun bildet man die Summe der \(w_i\) und erhält das Ausgangspolynom
-</p>
+  <p>Als kleine Hilfestellung für die Berechnung, die benötigten Modulo-Inversen sind:</p>
+  <p style="margin-left: 20pt">\( \begin{align}
+    2^{-1} &= 9 \; &(\textrm{mod} \; 17)\\
+    1^{-1} &= 1 \; &(\textrm{mod} \; 17)\\
+    -1^{-1} &= 16^{-1} = 16 \; &(\textrm{mod} \; 17)
+  \end{align} \)</p>
 
-<p style="margin-left: 20pt"> \( \begin{align}
-     \sum w_i = 5 + 7x + 11x^2, 1 \leq i \leq 3
-  \end{align}
-\)</p>
+  <p>Mit den Lagrange-Polynomen setzen wir nun in die Interpolationsfunktion ein und erhalten das
+    Geheimnis \(s\):</p>
 
-<p>Der Koeffizient \(a_0 = 5\) ist unser gesuchtes Geheimnis .
+  <p style="margin-left: 20pt; margin-bottom: 30pt">\( \begin{align}
+    s = \sum L_i(0) \cdot y_i \quad \mod p
+  \end{align} \)</p>
+
+  <p style="margin-left: 20pt">\( \begin{alignat}{14}
+    s =&& L_1(0) \, \cdot& \, y_1 \, &+&&\ L_2(0) \, \cdot&& \, y_2 \, +&& \, L_3(0) \, \cdot& \,
+      y_3 &\mod 17 \\[5pt]
+    s =&& L_1(0) \, \cdot& \, 6 \, &+&&\ L_2(0) \, \cdot&& \, 12 \, +&& \, L_3(0) \, \cdot& \,
+      6 &\mod 17 \\[5pt]
+    s =&& 3 \, \cdot& \, 6 \, &+&&\ 14 \, \cdot&& \, 12 \, +&& \, 1 \, \cdot& \, 6 &\mod 17 \\[5pt]
+    s =&& 18 & &+&& 168 && +&& 6 & &\mod 17 \\[5pt]
+    s =&& & & && 192 && && & &\mod 17 \\[5pt] s =&& & & && 5 && && & &\mod 17 \\
+  \end{alignat} \)</p>
+
+  <p><b>\(s = 5\)</b> ist unser gesuchtes Geheimnis.</p>
+
+  <figure style="width: 65%; min-width: 250px; max-width: 1000px">
+    <img src="sssAlgorithm_fig2-example-plotted-with-interpolation.svg"
+      alt="Diagramm des Beispielpolynoms. Zusätzlich zum obigen Beispiel ist das interpolierte Polynom zu sehen.
+  Es überschneidet sich exakt beim Geheimnis.">
+    <figcaption>Abbildung 2: Nun ist zusätzlich das Interpolationspolynom \(P'(x)\)
+      eingezeichnet. Es ist gut ersichtlich, wie sich beide am Punkt des Geheimnisses \(x = 0\)
+      überschneiden. Die kontinuierliche Darstellung als Linie ist wiederum nur eine gedankliche und
+      visuelle Stütze.</figcaption>
+  </figure>
 
 <h3>Literatur</h3>
-     <p>[1] Johannes Buchmann: Einführung in die Kryptografie, 4.,
-       erweiterte Auflage 2008, Kapitel 16, Seite 243
-</p>
+  <p>[1] Johannes Buchmann: Einführung in die Kryptografie, 4., erweiterte Auflage 2008, Kapitel 16, Seite
+    243</p>
 
 </body>
 </html>
